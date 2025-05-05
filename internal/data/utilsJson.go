@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"strconv"
 )
 
 type Ponto struct {
@@ -38,25 +38,18 @@ type DadosVeiculos struct {
 
 func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string) []string {
 	var trechoViagem []string
-	indexOrigem, indexDestino := -1, -1
 
-	for i, cidade := range rotaCompleta {
-		if strings.ToUpper(cidade) == strings.ToUpper(origem) {
-			indexOrigem = i
-		}
-		if strings.ToUpper(cidade) == strings.ToUpper(destino) {
-			indexDestino = i
-		}
+	indexOrigem, err1 := strconv.Atoi(origem)
+	indexDestino, err2 := strconv.Atoi(destino)
+
+	if err1 != nil || err2 != nil || 1 > indexOrigem || 9 < indexOrigem || 1 > indexDestino || 9 < indexDestino {
+		return []string{}
 	}
 
-	if indexOrigem == -1 || indexDestino == -1 {
-		return []string{} //Cidade nao encontrada
-	}
-
-	if indexOrigem <= indexDestino {
-		trechoViagem = rotaCompleta[indexOrigem : indexDestino+1]
+	if indexOrigem-1 <= indexDestino-1 {
+		trechoViagem = rotaCompleta[indexOrigem-1 : indexDestino]
 	} else {
-		for i := indexOrigem; i >= indexDestino; i-- {
+		for i := indexOrigem - 1; i >= indexDestino-1; i-- {
 			trechoViagem = append(trechoViagem, rotaCompleta[i])
 		}
 	}
@@ -64,7 +57,7 @@ func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string)
 }
 
 func OpenFile(arquivo string) (DadosRegiao, error) {
-	path := filepath.Join("app", "internal", "data", arquivo)
+	path := filepath.Join("internal", "data", arquivo) //"app", "internal", "data", arquivo
 	file, erro := os.Open(path)
 	if erro != nil {
 		return DadosRegiao{}, (fmt.Errorf("Erro ao abrir: %v", erro))
@@ -116,20 +109,3 @@ func GetTotalPontosJson() int {
 	}
 	return len(pontos)
 }
-/*
-func main() {
-	rotaNordeste, erro := GetRotaSalvadorSaoLuis()
-
-	if erro != nil {
-		fmt.Printf("Erro ao carregar rota: %v", erro)
-	}
-
-	origem := "salvador"
-	destino := "natal"
-	trecho := GetTrechoRotaCompleta(origem, destino, rotaNordeste)
-
-	fmt.Printf("Trecho da viagem de %s ate %s:\n", origem, destino)
-	for _, cidade := range trecho {
-		fmt.Println(" -", cidade)
-	}
-}*/
