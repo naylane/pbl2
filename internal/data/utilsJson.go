@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	"encoding/json"
@@ -116,12 +116,12 @@ func GetTotalPontosJson() int {
 	}
 	return len(pontos)
 }
-
+/*
 func main() {
 	rotaNordeste, erro := GetRotaSalvadorSaoLuis()
 
 	if erro != nil {
-		fmt.Printf("Erro ao carregar dados JSON: %v", erro)
+		fmt.Printf("Erro ao carregar rota: %v", erro)
 	}
 
 	origem := "salvador"
@@ -132,4 +132,4 @@ func main() {
 	for _, cidade := range trecho {
 		fmt.Println(" -", cidade)
 	}
-}
+}*/
