@@ -36,14 +36,14 @@ type DadosVeiculos struct {
 	Veiculos []Veiculo `json:"veiculos"`
 }
 
-func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string) []string {
+func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string) ([]string, int, int) {
 	var trechoViagem []string
 
 	indexOrigem, err1 := strconv.Atoi(origem)
 	indexDestino, err2 := strconv.Atoi(destino)
 
 	if err1 != nil || err2 != nil || 1 > indexOrigem || 9 < indexOrigem || 1 > indexDestino || 9 < indexDestino {
-		return []string{}
+		return []string{}, -1, -1
 	}
 
 	if indexOrigem-1 <= indexDestino-1 {
@@ -53,7 +53,7 @@ func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string)
 			trechoViagem = append(trechoViagem, rotaCompleta[i])
 		}
 	}
-	return trechoViagem
+	return trechoViagem, indexOrigem-1, indexDestino-1
 }
 
 func OpenFile(arquivo string) (DadosRegiao, error) {

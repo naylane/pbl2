@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"pbl2/internal/data"
+	"pbl2/internal/distancia"
 	"strings"
 )
 
@@ -81,6 +82,39 @@ func GetCidade(tipo string) string {
 	return "-1"
 }
 
+func GetDistanciaRota(origem, destino int) float64 {
+	var pontosViagem []data.Ponto
+	pontos, erro := data.GetPontosDeRecargaJson()
+	if erro != nil {
+		fmt.Printf("Erro ao carregar pontos: %v", erro)
+		return -1
+	}
+	var latitudeOrigem, longitudeOrigem, latitudeDestino, longitudeDestino float64
+
+	if origem <= destino {
+		pontosViagem = pontos[origem : destino+1]
+	} else {
+		for i := origem; i >= destino; i-- {
+			pontosViagem = append(pontosViagem, pontos[i])
+		}
+	}
+
+	for i, ponto := range pontosViagem {
+		max := len(pontosViagem) - 1
+		if i == 0 {
+			fmt.Printf("origem: %s", ponto.Cidade)
+			latitudeOrigem = ponto.Latitude
+			longitudeOrigem = ponto.Longitude
+		} else if i == max {
+			fmt.Printf("destino: %s", ponto.Cidade)
+			latitudeDestino = ponto.Latitude
+			longitudeDestino = ponto.Longitude
+		}
+	}
+	distanciaTotal := distancia.GetDistancia(latitudeOrigem, longitudeOrigem, latitudeDestino, longitudeDestino)
+	return distanciaTotal / 1000
+}
+
 func ProgramarViagem() {
 	origem := GetCidade("Origem")
 	if origem == "-2" {
@@ -92,18 +126,20 @@ func ProgramarViagem() {
 		fmt.Printf("Erro ao carregar rota: %v", erro)
 		return
 	}
-	rota := data.GetTrechoRotaCompleta(origem, destino, rotaNordeste)
+	rota, indexOrigem, indexDestino := data.GetTrechoRotaCompleta(origem, destino, rotaNordeste)
+	distancia := GetDistanciaRota(indexOrigem, indexDestino)
 	fmt.Printf("Rota da viagem: \n")
 	for i, cidade := range rota {
 		max := len(rota)
 		if i == 0 {
 			fmt.Printf("Origem: %s -> ", cidade)
 		} else if i == max-1 {
-			fmt.Printf("%s: Destino Final.", cidade)
+			fmt.Printf("%s: Destino Final.\n", cidade)
 		} else {
 			fmt.Print(cidade, " -> ")
 		}
 	}
+	fmt.Printf("Distancia total: %.2f km\n", distancia)
 }
 
 func listMenu() {
