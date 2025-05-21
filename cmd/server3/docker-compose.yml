@@ -1,0 +1,13 @@
+services:
+  server3:
+    build: ./server
+    container_name: server3
+    ports:
+      - "8083:8083"
+    environment:
+      - ID=003
+      - PORTA=8083
+    volumes:
+      - ./dados/empresas.json:/app/empresas.json
+      - ./dados/regiao.json:/app/regiao.json
+      - ./dados/veiculos.json:/app/veiculos.json

@@ -1,0 +1,19 @@
+{
+  "empresas": [
+    {
+      "Id": "001",
+      "Nome": "N-Sul",
+      "Pontos": ["Salvador","Aracaju","Maceio"] 
+    },
+    {
+      "Id": "002",
+      "Nome": "N-Centro",
+      "Pontos": ["Recife","Joao Pessoa","Natal"]
+    },
+    {
+      "Id": "003",
+      "Nome": "N-Norte",
+      "Pontos": ["Fortaleza","Teresina","Sao Luis"]
+    }
+  ]
+}

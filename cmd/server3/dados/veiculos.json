@@ -1,0 +1,9 @@
+{
+  "veiculos": [
+    {
+      "placa": "padrao",
+      "autonomia": 500,
+      "batery_level": 100
+    }
+  ]
+}
