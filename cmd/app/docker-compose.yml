@@ -6,9 +6,9 @@ services:
     volumes:
       - ./mosquitto:/mosquitto/config
 
-  server1:
-    build: ./server
-    container_name: server1
+  servidor1:
+    build: ./servidor
+    container_name: servidor1
     ports:
       - "8081:8081"
     environment:
@@ -21,9 +21,9 @@ services:
       - ./dados/regiao.json:/app/regiao.json
       - ./dados/veiculos.json:/app/veiculos.json
 
-  client:
-    build: ./client
-    container_name: client
+  veiculo:
+    build: ./veiculo
+    container_name: veiculo
     stdin_open: true
     tty: true
     depends_on:

@@ -1,7 +1,7 @@
 services:
-  server2:
-    build: ./server
-    container_name: server2
+  servidor2:
+    build: ./servidor
+    container_name: servidor2
     ports:
       - "8082:8082"
     environment:
