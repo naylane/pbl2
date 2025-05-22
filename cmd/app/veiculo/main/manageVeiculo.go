@@ -140,6 +140,7 @@ func VerificarRecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) 
 	var cap_km_bateria_restante, dist_ate_prox_ponto float64
 	pontos_da_viagem := GetPontosPorCidades(cidades_da_viagem)
 	max := len(pontos_da_viagem)
+	fmt.Printf("\nSimulação da viagem para o veículo [%s]:\n", veiculo.Placa)
 	for i, ponto := range pontos_da_viagem {
 		ponto_atual := ponto
 		if i < max-1 {
@@ -148,14 +149,22 @@ func VerificarRecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) 
 			dist_ate_prox_ponto = GetDistancia(ponto_atual.Latitude, ponto_atual.Longitude, proximo_ponto.Latitude, proximo_ponto.Longitude)
 			cap_km_bateria_restante = (veiculo.Autonomia * veiculo.NivelBateriaAtual) / 100
 
+			if i == 0 {
+				fmt.Printf("Saindo de %s - Bateria restante: %.2f%% Capacidade (%.2f km). Próximo ponto em: %.2f km\n", ponto.Cidade, veiculo.NivelBateriaAtual, cap_km_bateria_restante, dist_ate_prox_ponto)
+			} else {
+				fmt.Printf("Passando em %s - Bateria restante: %.2f%% Capacidade (%.2f km). Próximo ponto em: %.2f km\n", ponto.Cidade, veiculo.NivelBateriaAtual, cap_km_bateria_restante, dist_ate_prox_ponto)
+			}
+
 			if dist_ate_prox_ponto > cap_km_bateria_restante {
 				recargas_necessarias = append(recargas_necessarias, ponto_atual)
 				veiculo.NivelBateriaAtual = 100
-				//cap_km_bateria_restante = (veiculo.Autonomia * veiculo.NivelBateriaAtual) / 100
+				cap_km_bateria_restante = (veiculo.Autonomia * veiculo.NivelBateriaAtual) / 100
+				fmt.Printf("Recarregará em %s! Bateria restante: %.2f%% Capacidade(%.2fkm). Próximo ponto em: %.2fkm\n", ponto.Cidade, veiculo.NivelBateriaAtual, cap_km_bateria_restante, dist_ate_prox_ponto)
 			}
 			percentualConsumido := (dist_ate_prox_ponto / veiculo.Autonomia) * 100
 			veiculo.NivelBateriaAtual -= percentualConsumido
-			//cap_km_bateria_restante = (veiculo.Autonomia * veiculo.NivelBateriaAtual) / 100
+		} else {
+			fmt.Printf("Chegará ao seu destino em %s! Bateria restante: %.2f%% Capacidade(%.2f km).\n", ponto.Cidade, veiculo.NivelBateriaAtual, (veiculo.Autonomia*veiculo.NivelBateriaAtual)/100)
 		}
 	}
 	return recargas_necessarias
