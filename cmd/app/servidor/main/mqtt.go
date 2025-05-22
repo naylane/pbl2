@@ -24,6 +24,7 @@ func getClienteMqtt() mqtt.Client {
 }
 
 //OK
+// Inicializa MQTT para comunicação com cliente.
 func inicializaMqtt(idCliente string) {
 	empresa = GetEmpresaPorId(idCliente)
 
@@ -47,6 +48,7 @@ func inicializaMqtt(idCliente string) {
 	}
 }
 
+// Verifica se um ponto pertence a empresa ou não. Recebe como parâmetro o ponto e retorna true ou false.
 func pertenceAEstaEmpresa(ponto string) bool {
 	for _, p := range empresa.Pontos {
 		if p == ponto {
@@ -56,7 +58,8 @@ func pertenceAEstaEmpresa(ponto string) bool {
 	return false
 }
 
-//ok 
+//ok
+// Handler para tratar mensagens recebidas pelo cliente. Avalia o tipo de mensagem de acordo com o seu código.
 func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 	list := strings.Split(string(msg.Payload()), ",")
 	fmt.Printf("[Servidor recebeu]: %s\n", msg.Payload())
@@ -117,7 +120,6 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 		if len(pontos) > 0 && pertenceAEstaEmpresa(pontos[0]) {
 			cancelaPreReservaMqtt(client, pontos, placaVeiculo)
 		} else if len(pontos) > 0 {
-			// Handle cancellation for points in other companies
 			handleCancelaPreReservaRest(placaVeiculo, pontos)
 		}
 
@@ -130,6 +132,7 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 }
 
 //ok
+// Faz a pré-reserva do(s) ponto(s).
 func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
 	pontos_locais := false
 	falhaLocal := false
@@ -434,6 +437,7 @@ func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo st
 }
 
 //ok
+// Cancela reservas vinculadas a placa do veículo.
 func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -480,6 +484,7 @@ func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 }
 
 //ok
+// Libera os pontos reservados após o cliente concluir a viagem.
 func liberaPontosConcluiuViagem(client mqtt.Client, placaVeiculo string, pontos []string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()

@@ -49,9 +49,9 @@ func conecta(mensagem string, idClient string) bool {
 				operacaoSucesso = false
 			case "falha_reserva":
 				if len(parts) >= 3 {
-					fmt.Printf("\n[Falha] reserva: %s\n", parts[2])
+					fmt.Printf("\n[Erro] reserva: %s\n", parts[2])
 				} else {
-					fmt.Println("\n[Falha] Não foi possível reservar todos os pontos.")
+					fmt.Println("\n[Erro] Não foi possível reservar todos os pontos.")
 				}
 				respostaRecebida = true
 				operacaoSucesso = false
@@ -61,9 +61,9 @@ func conecta(mensagem string, idClient string) bool {
 				operacaoSucesso = true
 			case "cancelamento_falhou":
 				if len(parts) >= 2 {
-					fmt.Printf("\n [Falha] ao cancelar reserva: %s\n", parts[1])
+					fmt.Printf("\n [Erro] ao cancelar reserva: %s\n", parts[1])
 				} else {
-					fmt.Println("\n [Falha] ao cancelar a reserva.")
+					fmt.Println("\n [Erro] ao cancelar a reserva.")
 				}
 				respostaRecebida = true
 				operacaoSucesso = false
