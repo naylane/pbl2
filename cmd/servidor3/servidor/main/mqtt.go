@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -24,8 +25,8 @@ func getClienteMqtt() mqtt.Client {
 func inicializaMqtt(idCliente string) {
 	empresa = GetEmpresaPorId(idCliente)
 
-	//O servidor se conecta via TCP ao broker
-	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
+	//O servidor se conecta via TCP ao broker - Ip pc do broker aqui
+	opts := mqtt.NewClientOptions().AddBroker("tcp://172.16.103.1:1883")
 	opts.SetClientID(idCliente)
 
 	opts.OnConnect = func(c mqtt.Client) {
@@ -132,7 +133,11 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 	var indexesReservados []int
 
 	for _, ponto := range pontosParaReservar {
-		lock := ponto_locks[ponto]
+		lock, exists := ponto_locks[ponto]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto] = lock
+		}
 		lock.Lock()
 
 		for _, pontoDaEmpresa := range empresa.Pontos {
@@ -185,7 +190,11 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 
 	if pontosLocais {
 		for i, ponto := range pontosReservadosTemp {
-			lock := ponto_locks[ponto]
+			lock, exists := ponto_locks[ponto]
+			if !exists {
+				lock = &sync.Mutex{}
+				ponto_locks[ponto] = lock
+			}
 			lock.Lock()
 
 			index := indexesReservados[i]
@@ -207,7 +216,11 @@ func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, pla
 	sucesso := true
 
 	for _, ponto := range pontosParaReservar {
-		lock := ponto_locks[ponto]
+		lock, exists := ponto_locks[ponto]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto] = lock
+		}
 		lock.Lock()
 
 		for _, pontoDaEmpresa := range empresa.Pontos {
@@ -271,7 +284,11 @@ func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, plac
 	cancelouAlgum := false
 
 	for _, ponto := range pontosParaReservar {
-		lock := ponto_locks[ponto]
+		lock, exists := ponto_locks[ponto]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto] = lock
+		}
 		lock.Lock()
 
 		for _, pontoDaEmpresa := range empresa.Pontos {
@@ -306,9 +323,12 @@ func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration)
 		fmt.Printf("Verificando timeout para pré-reservas do veículo %s...\n", placa)
 
 		for _, ponto := range pontos {
-			lock := ponto_locks[ponto]
+			lock, exists := ponto_locks[ponto]
+			if !exists {
+				lock = &sync.Mutex{}
+				ponto_locks[ponto] = lock
+			}
 			lock.Lock()
-
 			pontoRecarga, index := GetPontoPorCidade(ponto)
 			if pontoRecarga.Reservado == "PRE_"+placa {
 				dadosRegiao.PontosDeRecarga[index].Reservado = ""
@@ -328,7 +348,11 @@ func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo st
 	var pontos_reservados_temp []string //reservas temporárias
 	var i_reservados []int              //índices reservados
 	for _, ponto := range pontos_a_reservar {
-		lock := ponto_locks[ponto]
+		lock, exists := ponto_locks[ponto]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto] = lock
+		}
 		lock.Lock()
 
 		for _, ponto := range pontos_a_reservar {
@@ -432,7 +456,11 @@ func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 	//existe reservas para essa placa
 	if pontosMap, existe := reservas[placaVeiculo]; existe {
 		for ponto := range pontosMap {
-			lock := ponto_locks[ponto]
+			lock, exists := ponto_locks[ponto]
+			if !exists {
+				lock = &sync.Mutex{}
+				ponto_locks[ponto] = lock
+			}
 			lock.Lock()
 			ponto_desta_empresa := false
 			for _, pontoDaEmpresa := range empresa.Pontos {
@@ -475,7 +503,11 @@ func liberaPontosConcluiuViagem(client mqtt.Client, placaVeiculo string, pontos 
 	liberouAlgum := false
 
 	for _, ponto := range pontos {
-		lock := ponto_locks[ponto]
+		lock, exists := ponto_locks[ponto]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto] = lock
+		}
 		lock.Lock()
 		pontoObj, index := GetPontoPorCidade(ponto)
 		if pontoObj.Reservado == placaVeiculo {

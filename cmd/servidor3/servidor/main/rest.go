@@ -35,7 +35,7 @@ var status_ponto = struct {
 var ponto_locks = make(map[string]*sync.Mutex)
 
 // IP do pc lab em uso
-var ip_pc string = "172.16.103.14"
+var ip_pc string = "172.16.103.3"
 
 func inicializa_rest(porta string) {
 	http.HandleFunc("/api/regiao", handleRegiaoJson)
@@ -264,9 +264,9 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	// Remove o próprio servidor
@@ -343,9 +343,9 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	req := ReservaRequest{
@@ -405,8 +405,13 @@ func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Reque
 	}
 
 	for _, ponto_solicitado := range req.Pontos {
-		lock := ponto_locks[ponto_solicitado]
+		lock, exists := ponto_locks[ponto_solicitado]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto_solicitado] = lock
+		}
 		lock.Lock()
+
 		for _, pontoDaEmpresa := range empresa.Pontos {
 			if ponto_solicitado == pontoDaEmpresa {
 				ponto_localizado = true
@@ -472,9 +477,9 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	// Remove o próprio servidor da lista
@@ -572,9 +577,9 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	var outrosServidores []string
@@ -648,7 +653,11 @@ func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 
 	ponto_localizado := false
 	for _, ponto_solicitado := range req.Pontos {
-		lock := ponto_locks[ponto_solicitado]
+		lock, exists := ponto_locks[ponto_solicitado]
+		if !exists {
+			lock = &sync.Mutex{}
+			ponto_locks[ponto_solicitado] = lock
+		}
 		lock.Lock()
 		for _, pontoDaEmpresa := range empresa.Pontos {
 			if ponto_solicitado == pontoDaEmpresa {
@@ -737,7 +746,11 @@ func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	// Verifica se tem reservas para o veiculo
 	if pontos_map, existe := reservas[req.PlacaVeiculo]; existe {
 		for _, ponto_solicitado := range req.Pontos {
-			lock := ponto_locks[ponto_solicitado]
+			lock, exists := ponto_locks[ponto_solicitado]
+			if !exists {
+				lock = &sync.Mutex{}
+				ponto_locks[ponto_solicitado] = lock
+			}
 			lock.Lock()
 			if _, reservado := pontos_map[ponto_solicitado]; reservado {
 				//reservado -> Cancela a reserva

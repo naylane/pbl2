@@ -7,7 +7,9 @@ services:
       - ./mosquitto:/mosquitto/config
 
   servidor1:
-    build: ./servidor
+    build: 
+      context: ./servidor/main
+      dockerfile: Dockerfile
     container_name: servidor1
     ports:
       - "8081:8081"
@@ -22,7 +24,9 @@ services:
       - ./dados/veiculos.json:/app/veiculos.json
 
   veiculo:
-    build: ./veiculo
+    build: 
+      context: ./veiculo/main
+      dockerfile: Dockerfile
     container_name: veiculo
     stdin_open: true
     tty: true

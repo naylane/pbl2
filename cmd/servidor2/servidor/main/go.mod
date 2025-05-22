@@ -1,6 +1,5 @@
-module server
 
-go 1.20
+go 1.24
 
 require github.com/eclipse/paho.mqtt.golang v1.3.5
 

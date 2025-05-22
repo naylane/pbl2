@@ -10,7 +10,7 @@ import (
 
 // envio e recepção com conexão única
 func conecta(mensagem string, idClient string) bool {
-	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
+	opts := mqtt.NewClientOptions().AddBroker("tcp://172.16.103.3:1883")
 	opts.SetClientID(idClient)
 
 	var respostaRecebida bool

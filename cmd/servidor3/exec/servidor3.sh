@@ -1,9 +1,12 @@
 #!/bin/bash
 
+chmod +x servidor3.sh
+
 docker-compose build
 docker-compose create
 docker ps -a
 docker-compose start servidor3
 docker-compose logs -f 
 
-# ./cmd/servidor2/exec/servidor3.sh
+# cd ./cmd/servidor3/exec
+# ./servidor3.sh
