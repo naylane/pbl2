@@ -5,7 +5,7 @@ import (
 	"math/rand"
 )
 
-func setDadosVeiculo(veiculo *Veiculo) {
+func setDadosIniciais(veiculo *Veiculo) {
 	level := float64(int(10 + rand.Float64()*(91)))
 	autonomia := float64(int(500 + rand.Float64()*(201)))
 
