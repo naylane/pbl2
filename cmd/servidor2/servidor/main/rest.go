@@ -36,8 +36,13 @@ var ponto_locks = make(map[string]*sync.Mutex)
 
 // IP do pc lab em uso
 var ip_pc string = "172.16.103.2"
+var servidores = []string{
+	"http://172.16.103.1:8081",
+	"http://172.16.103.2:8082",
+	"http://172.16.103.3:8083",
+}
 
-//ok
+// ok
 func inicializa_rest(porta string) {
 	http.HandleFunc("/api/regiao", handleRegiaoJson)
 	http.HandleFunc("/api/status", handleStatus)
@@ -55,13 +60,13 @@ func inicializa_rest(porta string) {
 	}()
 }
 
-//ok
+// ok
 func handleRegiaoJson(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(dadosRegiao)
 }
 
-//ok
+// ok
 func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
@@ -98,7 +103,7 @@ func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("[INFO] Status do ponto %s alterado para: %v.\n", req.Ponto, req.Status)
 }
 
-//ok
+// ok
 // status dos pontos
 func inicializaMonitoramentoDosPontos() {
 	for _, ponto := range dadosRegiao.PontosDeRecarga {
@@ -134,7 +139,7 @@ func inicializaMonitoramentoDosPontos() {
 	}()
 }
 
-//ok
+// ok
 func statusDosPontos() {
 	for _, ponto := range empresa.Pontos {
 		ponto_conectado := pontoEstaConectado(ponto)
@@ -155,7 +160,7 @@ func statusDosPontos() {
 	}
 }
 
-//ok
+// ok
 func pontoEstaConectado(ponto string) bool {
 	ponto_desta_empresa := false
 	for _, pontoDaEmpresa := range empresa.Pontos {
@@ -174,7 +179,7 @@ func pontoEstaConectado(ponto string) bool {
 	return pontoObj.ID%2 == 0
 }
 
-//ok
+// ok
 func cancelaReservasPorPontosDesconectados(ponto string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -200,7 +205,7 @@ func cancelaReservasPorPontosDesconectados(ponto string) {
 	}
 }
 
-//ok
+// ok
 // entre servidores
 func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{}) error {
 	json_corpo, erro := json.Marshal(corpo)
@@ -234,7 +239,7 @@ func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{})
 	return nil
 }
 
-//ok
+// ok
 // coordenar reservas com outros servidores via REST
 func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	// Filtra pontos que não pertencem a este servidor
@@ -269,13 +274,7 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	default:
 		porta = "8080"
 	}
-	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
-
-	servidores := []string{
-		"http://172.16.103.1:8081",
-		"http://172.16.103.2:8082",
-		"http://172.16.103.3:8083",
-	}
+	var meuEndereco = fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	// Remove o próprio servidor
 	var outros_servidores []string
@@ -335,7 +334,7 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	return todasConfirmadas
 }
 
-//ok
+// ok
 func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool {
 	ip_servidor_atual := ip_pc
 	var porta string
@@ -350,12 +349,6 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 		porta = "8080"
 	}
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
-
-	servidores := []string{
-		"http://172.16.103.1:8081",
-		"http://172.16.103.2:8082",
-		"http://172.16.103.3:8083",
-	}
 
 	req := ReservaRequest{
 		PlacaVeiculo: placaVeiculo,
@@ -389,7 +382,7 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 	return sucesso_em_algum
 }
 
-//ok
+// ok
 func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -446,7 +439,7 @@ func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Reque
 	json.NewEncoder(responseW).Encode(resposta)
 }
 
-//ok
+// ok
 // com outros servidores via REST
 func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
@@ -481,12 +474,6 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 		porta = "8080"
 	}
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
-
-	servidores := []string{
-		"http://172.16.103.1:8081",
-		"http://172.16.103.2:8082",
-		"http://172.16.103.3:8083",
-	}
 
 	// Remove o próprio servidor da lista
 	var outros_servidores []string
@@ -548,7 +535,7 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	return todas_confirmadas
 }
 
-//ok
+// ok
 func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
 	for _, ponto := range pontos {
@@ -582,12 +569,6 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 		porta = "8080"
 	}
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
-
-	servidores := []string{
-		"http://172.16.103.1:8081",
-		"http://172.16.103.2:8082",
-		"http://172.16.103.3:8083",
-	}
 
 	var outrosServidores []string
 	for _, serv := range servidores {
@@ -634,7 +615,7 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 	return todasConfirmadas
 }
 
-//ok
+// ok
 func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(map[string]string{
@@ -643,7 +624,7 @@ func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 	})
 }
 
-//ok
+// ok
 func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -729,7 +710,7 @@ func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 	}
 }
 
-//ok
+// ok
 func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -776,7 +757,7 @@ func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(responseW).Encode(resposta)
 }
 
-//ok
+// ok
 // em outro servidor
 func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) {
 	ip_servidor_atual := ip_pc
@@ -808,7 +789,7 @@ func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) 
 	}
 }
 
-//ok
+// ok
 func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 	go func() {
 		time.Sleep(tempo)
@@ -833,7 +814,6 @@ func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 	}()
 }
 
-
 // ok
 func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 	//cancelar pré-reservas em todos os servidores
@@ -856,12 +836,6 @@ func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 		porta = "8080"
 	}
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
-
-	servidores := []string{
-		"http://172.16.103.1:8081",
-		"http://172.16.103.2:8082",
-		"http://172.16.103.3:8083",
-	}
 
 	//requisições para todos os servidores para cancelar a pré-reserva
 	sucesso := true
