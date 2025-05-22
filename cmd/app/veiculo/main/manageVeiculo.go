@@ -12,6 +12,7 @@ import (
 
 var placa string
 
+//ok
 func listCapitaisNordeste() {
 	fmt.Println("\n======= Cidades com Servico de Recarga =======")
 	fmt.Println("(1) - Salvador")
@@ -26,6 +27,7 @@ func listCapitaisNordeste() {
 	fmt.Println("(0) - Retornar ao Menu")
 }
 
+//ok
 func opcoesMenu() {
 	fmt.Println("\n======= Menu Inicial =======")
 	fmt.Println("(1) - Programar viagem")
@@ -78,13 +80,14 @@ func MenuInicial() {
 	}
 }
 
+//ok
 func GetCidade(tipo string) string {
-	leitor := bufio.NewReader(os.Stdin)
+	input := bufio.NewReader(os.Stdin)
 	on := true
 	for on {
 		listCapitaisNordeste()
 		fmt.Printf("Selecione a cidade de %s: \n", tipo)
-		opcao, _ := leitor.ReadString('\n')
+		opcao, _ := input.ReadString('\n')
 		opcao = strings.TrimSpace(opcao)
 		switch opcao {
 		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
@@ -100,6 +103,7 @@ func GetCidade(tipo string) string {
 	return "-1"
 }
 
+//ok
 func IdentificacaoInicialPlaca() string {
 	input := bufio.NewReader(os.Stdin)
 	placa := ""
@@ -135,7 +139,8 @@ func IdentificacaoInicialPlaca() string {
 	return placa
 }
 
-func VerificarRecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) []Ponto {
+//ok
+func RecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) []Ponto {
 	var recargas_necessarias []Ponto
 	var cap_km_bateria_restante, dist_ate_prox_ponto float64
 	pontos_da_viagem := GetPontosPorCidades(cidades_da_viagem)
@@ -170,6 +175,7 @@ func VerificarRecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) 
 	return recargas_necessarias
 }
 
+//ok
 func GetDistanciaRota(origem, destino int) float64 {
 	var pontosViagem []Ponto
 	pontos, erro := GetPontosDeRecargaJson()
@@ -201,6 +207,7 @@ func GetDistanciaRota(origem, destino int) float64 {
 	return distanciaTotal
 }
 
+//ok
 func ProgramarReservas(veiculo *Veiculo) {
 	origem := GetCidade("Origem")
 	if origem == "-2" {
@@ -228,7 +235,7 @@ func ProgramarReservas(veiculo *Veiculo) {
 	}
 	fmt.Printf("Distancia total: %.2fkm\n\n", distancia)
 
-	pontos_necessarios := VerificarRecargasNecessarias(veiculo, rota_viagem)
+	pontos_necessarios := RecargasNecessarias(veiculo, rota_viagem)
 
 	if len(pontos_necessarios) == 0 {
 		fmt.Printf("\nPara este trajeto não será necessário reservar pontos!\n")
@@ -291,6 +298,7 @@ func ProgramarReservas(veiculo *Veiculo) {
 	}
 }
 
+//ok
 // Libera os pontos ao concluir viagem
 func liberarPontosMQTT(placa string, pontos []string) {
 	mensagem := "7," + placa + "," + strings.Join(pontos, ",")
