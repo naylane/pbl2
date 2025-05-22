@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 )
-
+//ok
 func main() {
 	abreArquivoEmpresas()
 	GetPontosDeRecargaJson()
