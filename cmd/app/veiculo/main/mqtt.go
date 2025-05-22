@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-//envio e recepção com conexão única
+// envio e recepção com conexão única
 func conecta(mensagem string, idClient string) bool {
 	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
 	opts.SetClientID(idClient)
@@ -15,7 +16,7 @@ func conecta(mensagem string, idClient string) bool {
 	var respostaRecebida bool
 	var operacaoSucesso bool
 
-	//Configurar handler antes de conectar para mensagens de resposta 
+	//Configurar handler antes de conectar para mensagens de resposta
 	topicResponse := "mensagens/cliente/" + idClient
 	opts.OnConnect = func(c mqtt.Client) {
 		fmt.Printf("\nConectado ao broker: Cliente %s.\n", idClient)
@@ -125,8 +126,4 @@ func conecta(mensagem string, idClient string) bool {
 	// Desconecta após receber resposta ou timeout
 	client.Disconnect(250)
 	return operacaoSucesso
-}
-
-func receberRespostas(placaVeiculo string) {
-	fmt.Println("Processando resposta...")
 }
