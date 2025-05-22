@@ -11,3 +11,5 @@ docker-compose logs -f
 #docker-compose start veiculo
 #docker exec -it veiculo sh
 #./veiculo
+
+#cd ./cmd/app/exec/inicia.sh
