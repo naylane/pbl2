@@ -37,6 +37,7 @@ var ponto_locks = make(map[string]*sync.Mutex)
 // IP do pc lab em uso
 var ip_pc string = "172.16.103.1"
 
+// ok
 func inicializa_rest(porta string) {
 	http.HandleFunc("/api/regiao", handleRegiaoJson)
 	http.HandleFunc("/api/status", handleStatus)
@@ -48,21 +49,23 @@ func inicializa_rest(porta string) {
 	fmt.Printf("[Servidor REST] iniciado - porta %s\n", porta)
 	endereco := "0.0.0.0:" + porta
 	go func() {
-		if err := http.ListenAndServe(endereco, nil); err != nil {
-			fmt.Printf("Erro ao iniciar servidor REST: %v\n", err)
+		if erro := http.ListenAndServe(endereco, nil); erro != nil {
+			fmt.Printf("Erro ao iniciar servidor REST: %v\n", erro)
 		}
 	}()
 
 }
 
+// ok
 func handleRegiaoJson(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(dadosRegiao)
 }
 
-func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
+// ok
+func handleStatusPonto(responseW http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -71,8 +74,8 @@ func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 		Status bool   `json:"status"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		http.Error(responseW, "Erro ao decodificar JSON", http.StatusBadRequest)
 		return
 	}
 
@@ -86,8 +89,8 @@ func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 		cancelaReservasPorPontosDesconectados(req.Ponto)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	responseW.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(responseW).Encode(map[string]interface{}{
 		"ponto":      req.Ponto,
 		"status":     req.Status,
 		"empresa_id": empresa.Id,
@@ -96,6 +99,7 @@ func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("[INFO] Status do ponto %s alterado para: %v.\n", req.Ponto, req.Status)
 }
 
+// ok
 // status dos pontos
 func inicializaMonitoramentoDosPontos() {
 	for _, ponto := range dadosRegiao.PontosDeRecarga {
@@ -131,6 +135,7 @@ func inicializaMonitoramentoDosPontos() {
 	}()
 }
 
+// ok
 func statusDosPontos() {
 	for _, ponto := range empresa.Pontos {
 		ponto_conectado := pontoEstaConectado(ponto)
@@ -151,6 +156,7 @@ func statusDosPontos() {
 	}
 }
 
+// ok
 func pontoEstaConectado(ponto string) bool {
 	pertenceEmpresa := false
 	for _, pontoDaEmpresa := range empresa.Pontos {
@@ -169,6 +175,7 @@ func pontoEstaConectado(ponto string) bool {
 	return pontoObj.ID%2 == 0
 }
 
+// ok
 func cancelaReservasPorPontosDesconectados(ponto string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -194,6 +201,7 @@ func cancelaReservasPorPontosDesconectados(ponto string) {
 	}
 }
 
+// ok
 // entre servidores
 func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{}) error {
 	json_corpo, erro := json.Marshal(corpo)
@@ -227,6 +235,7 @@ func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{})
 	return nil
 }
 
+// ok
 // coordenar reservas com outros servidores via REST
 func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	// Filtra pontos que não pertencem a este servidor
@@ -327,6 +336,7 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	return todasConfirmadas
 }
 
+// ok
 func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool {
 	ip_servidor_atual := ip_pc
 	var porta string
@@ -380,6 +390,7 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 	return sucesso_em_algum
 }
 
+// ok
 func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -436,6 +447,7 @@ func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Reque
 	json.NewEncoder(responseW).Encode(resposta)
 }
 
+// ok
 // com outros servidores via REST
 func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
@@ -537,6 +549,7 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	return todas_confirmadas
 }
 
+// ok
 func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
 	for _, ponto := range pontos {
@@ -619,13 +632,10 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 		}
 	}
 
-	if !todasConfirmadas {
-		fmt.Printf("[AVISO] Falhas na confirmação: %v.\n", respostasFalhas)
-	}
-
 	return todasConfirmadas
 }
 
+// ok
 func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(map[string]string{
@@ -634,6 +644,7 @@ func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 	})
 }
 
+// ok
 func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -654,10 +665,10 @@ func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 			if ponto_solicitado == pontoDaEmpresa {
 				ponto_localizado = true
 				status_ponto.RLock()
-				estaConectado := status_ponto.status[ponto_solicitado]
+				conectado := status_ponto.status[ponto_solicitado]
 				status_ponto.RUnlock()
 
-				if !estaConectado {
+				if !conectado {
 					responseW.Header().Set("Content-Type", "application/json")
 					json.NewEncoder(responseW).Encode(ReservaResponse{
 						Status:    "falha",
@@ -719,13 +730,14 @@ func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 	}
 }
 
+// ok
 func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
 		return
 	}
 	var req ReservaRequest
-	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+	if erro := json.NewDecoder(request.Body).Decode(&req); erro != nil {
 		http.Error(responseW, "Erro ao decodificar JSON", http.StatusBadRequest)
 		return
 	}
@@ -765,6 +777,7 @@ func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(responseW).Encode(resposta)
 }
 
+// ok
 // em outro servidor
 func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) {
 	ip_servidor_atual := ip_pc
@@ -796,6 +809,7 @@ func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) 
 	}
 }
 
+// ok
 func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 	go func() {
 		time.Sleep(tempo)
@@ -820,6 +834,7 @@ func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 	}()
 }
 
+// ok
 func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 	//cancelar pré-reservas em todos os servidores
 	req := ReservaRequest{
@@ -828,11 +843,30 @@ func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 		EmpresaID:    empresa.Id,
 	}
 
-	//requisições para todos os servidores para cancelar a pré-reserva
-	sucessoEmTodos := true
+	ip_servidor_atual := ip_pc
+	var porta string
+	switch empresa.Id {
+	case "001":
+		porta = "8081"
+	case "002":
+		porta = "8082"
+	case "003":
+		porta = "8083"
+	default:
+		porta = "8080"
+	}
+	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
-	for _, servidor := range []string{"http://server1:8081", "http://server2:8082", "http://server3:8083"} {
-		if servidor == fmt.Sprintf("http://server%s:808%s", empresa.Id[3:], empresa.Id[3:]) {
+	servidores := []string{
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
+	}
+
+	//requisições para todos os servidores para cancelar a pré-reserva
+	sucesso := true
+	for _, servidor := range servidores {
+		if servidor == meuEndereco {
 			continue // passa o próprio servidor
 		}
 
@@ -842,15 +876,15 @@ func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 		err := requisicaoRest("POST", url, req, &resposta)
 		if err != nil {
 			fmt.Printf("[Erro] Comunicação com servidor %s: %v\n", servidor, err)
-			sucessoEmTodos = false
+			sucesso = false
 			continue
 		}
 
 		if resposta.Status != "cancelado" {
 			fmt.Printf("[ERRO] Cancelar pré-reserva em %s: %s.\n", servidor, resposta.Mensagem)
-			sucessoEmTodos = false
+			sucesso = false
 		}
 	}
 
-	return sucessoEmTodos
+	return sucesso
 }
