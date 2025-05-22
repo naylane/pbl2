@@ -29,10 +29,10 @@ func main() {
 	empresa = GetEmpresaPorId(idEmpresa)
 	fmt.Printf("[Iniciando servidor] %s - %d pontos de recarga\n", empresa.Nome, len(empresa.Pontos))
 	//comunicação servidor-servidor
-	iniciarServidorREST(porta)
-	iniciarMonitoramentoPontos()
+	inicializa_rest(porta)
+	inicializaMonitoramentoDosPontos()
 	//comunicação com clientes
-	iniciarMQTT(idEmpresa)
+	inicializaMqtt(idEmpresa)
 	//Mantem o servidor em execução
 	select {}
 }
