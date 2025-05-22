@@ -24,10 +24,11 @@ func getClienteMqtt() mqtt.Client {
 func inicializaMqtt(idCliente string) {
 	empresa = GetEmpresaPorId(idCliente)
 
-	//O servidor se conecta via TCP ao broker
-	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
+	//O servidor se conecta via TCP ao broker - Ip pc do broker aqui
+	opts := mqtt.NewClientOptions().AddBroker("tcp://172.16.103.1:1883")
 	opts.SetClientID(idCliente)
 
+	
 	opts.OnConnect = func(c mqtt.Client) {
 		fmt.Println("[Servidor MQTT] inicializado - Empresa " + idCliente + " e conectado ao broker")
 

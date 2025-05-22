@@ -4,6 +4,11 @@
       "placa": "padrao",
       "autonomia": 500,
       "batery_level": 100
+    },
+    {
+      "placa": "PLAC33",
+      "autonomia": 548,
+      "batery_level": 54
     }
   ]
 }

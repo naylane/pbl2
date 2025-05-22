@@ -1,6 +1,8 @@
 services:
   servidor3:
-    build: ./servidor
+    build: 
+      context: ./servidor/main
+      dockerfile: Dockerfile./servidor
     container_name: servidor3
     ports:
       - "8083:8083"

@@ -35,7 +35,7 @@ var status_ponto = struct {
 var ponto_locks = make(map[string]*sync.Mutex)
 
 // IP do pc lab em uso
-var ip_pc string = "172.16.103.14"
+var ip_pc string = "172.16.103.3"
 
 func inicializa_rest(porta string) {
 	http.HandleFunc("/api/regiao", handleRegiaoJson)
@@ -264,9 +264,9 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	// Remove o próprio servidor
@@ -343,9 +343,9 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	req := ReservaRequest{
@@ -472,9 +472,9 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	endereco_atual := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	// Remove o próprio servidor da lista
@@ -572,9 +572,9 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 	meuEndereco := fmt.Sprintf("http://%s:%s", ip_servidor_atual, porta)
 
 	servidores := []string{
-		"http://172.16.103.11:8081",
-		"http://172.16.103.12:8082",
-		"http://172.16.103.14:8083",
+		"http://172.16.103.1:8081",
+		"http://172.16.103.2:8082",
+		"http://172.16.103.3:8083",
 	}
 
 	var outrosServidores []string
