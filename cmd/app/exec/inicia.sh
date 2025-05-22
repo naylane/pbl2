@@ -12,4 +12,4 @@ docker-compose logs -f
 #docker exec -it veiculo sh
 #./veiculo
 
-#cd ./cmd/app/exec/inicia.sh
+# ./cmd/app/exec/inicia.sh
