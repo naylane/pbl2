@@ -1,5 +1,7 @@
 #!/bin/bash
 
+chmod +x inicia.sh
+
 docker-compose build
 docker-compose create
 docker ps -a
