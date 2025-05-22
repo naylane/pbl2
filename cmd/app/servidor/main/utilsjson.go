@@ -87,7 +87,6 @@ func EscreveArquivoVeiculos(veiculo Veiculo) error {
 	return erro
 }
 
-
 func GetVeiculoPorPlaca(placa string) (Veiculo, int) {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -240,7 +239,7 @@ func salvaDadosPontos() {
 	fmt.Println("\nDados salvos no arquivo Região!")
 }
 
-func leArquivoJsonEmpresas() {
+func abreArquivoEmpresas() {
 	bytes, err := os.ReadFile("empresas.json")
 	if err != nil {
 		fmt.Println("Erro ao abrir arquivo JSON:", err)
@@ -255,7 +254,7 @@ func leArquivoJsonEmpresas() {
 }
 
 // 001 = N-Sul, 002 = N-Centro, 003 = N-Norte
-func getEmpresaPorId(id string) Empresa {
+func GetEmpresaPorId(id string) Empresa {
 	var empresa Empresa
 	if len(dadosEmpresas.Empresas) > 0 {
 		for _, emp := range dadosEmpresas.Empresas {
@@ -267,7 +266,7 @@ func getEmpresaPorId(id string) Empresa {
 	return empresa
 }
 
-func getPontoPorCidade(cidade string) (Ponto, int) {
+func GetPontoPorCidade(cidade string) (Ponto, int) {
 	var ponto Ponto
 	var index int
 	pontos := dadosRegiao.PontosDeRecarga
