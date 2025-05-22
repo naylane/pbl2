@@ -39,7 +39,7 @@ type DadosEmpresas struct {
 var dadosEmpresas DadosEmpresas
 var dadosRegiao DadosRegiao
 
-//ok
+// ok
 func AbreArquivoRegiao() (DadosRegiao, error) {
 	file, erro := os.Open("/app/regiao.json")
 	if erro != nil {
@@ -54,7 +54,7 @@ func AbreArquivoRegiao() (DadosRegiao, error) {
 	return dadosRegiao, nil
 }
 
-//ok
+// ok
 func GetPontosDeRecargaJson() ([]Ponto, error) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -63,7 +63,7 @@ func GetPontosDeRecargaJson() ([]Ponto, error) {
 	return dadosRegiao.PontosDeRecarga, nil
 }
 
-//ok
+// ok
 func salvaDadosPontos() {
 	bytes, err := json.MarshalIndent(dadosRegiao, "", "  ")
 	if err != nil {
@@ -80,8 +80,8 @@ func salvaDadosPontos() {
 	fmt.Println("\nDados salvos no arquivo Região!")
 }
 
-//ok
-func abreArquivoEmpresas() {
+// ok
+func AbreArquivoEmpresas() {
 	bytes, err := os.ReadFile("empresas.json")
 	if err != nil {
 		fmt.Println("Erro ao abrir arquivo JSON:", err)
@@ -95,7 +95,7 @@ func abreArquivoEmpresas() {
 	}
 }
 
-//ok
+// ok
 // 001 = N-Sul, 002 = N-Centro, 003 = N-Norte
 func GetEmpresaPorId(id string) Empresa {
 	var empresa Empresa
@@ -109,7 +109,7 @@ func GetEmpresaPorId(id string) Empresa {
 	return empresa
 }
 
-//ok
+// ok
 func GetPontoPorCidade(cidade string) (Ponto, int) {
 	var ponto Ponto
 	var index int
