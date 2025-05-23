@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Função principal: inicializa o servidor e seus componentes
 func main() {
 	AbreArquivoEmpresas()
 	GetPontosDeRecargaJson()
@@ -14,7 +15,7 @@ func main() {
 		fmt.Println("Erro: ID não definido")
 		return
 	}
-	//Inicia o servidor REST
+	// Define porta com base no ID da empresa
 	var porta string
 	switch idEmpresa {
 	case "001":
@@ -26,12 +27,13 @@ func main() {
 	default:
 		porta = "8080"
 	}
+	// Recupera detalhes da empresa pelo ID
 	empresa = GetEmpresaPorId(idEmpresa)
 	fmt.Printf("[Iniciando servidor] %s - %d pontos de recarga\n", empresa.Nome, len(empresa.Pontos))
-	//comunicação servidor-servidor
+	// Inicializa comunicação REST entre servidores
 	inicializa_rest(porta)
 	inicializaMonitoramentoDosPontos()
-	//comunicação com clientes
+	// Inicializa comunicação MQTT com clientes
 	inicializaMqtt(idEmpresa)
 	//Mantem o servidor em execução
 	select {}

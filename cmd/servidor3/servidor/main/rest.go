@@ -43,6 +43,7 @@ var servidores = []string{
 }
 
 // ok
+// Inicializa o servidor REST e registra os handlers das rotas
 func inicializa_rest(porta string) {
 	http.HandleFunc("/api/regiao", handleRegiaoJson)
 	http.HandleFunc("/api/status", handleStatus)
@@ -61,12 +62,15 @@ func inicializa_rest(porta string) {
 }
 
 // ok
+// Retorna os dados da região em formato JSON
 func handleRegiaoJson(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(dadosRegiao)
 }
 
 // ok
+// Atualiza o status de um ponto de recarga
+// Usado para marcar pontos como conectados ou desconectados
 func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
@@ -104,7 +108,8 @@ func handleStatusPonto(w http.ResponseWriter, r *http.Request) {
 }
 
 // ok
-// status dos pontos
+// Inicializa o monitoramento dos pontos de recarga
+// Define o estado inicial e inicia verificação periódica
 func inicializaMonitoramentoDosPontos() {
 	for _, ponto := range dadosRegiao.PontosDeRecarga {
 		ponto_locks[ponto.Cidade] = &sync.Mutex{}
@@ -140,6 +145,7 @@ func inicializaMonitoramentoDosPontos() {
 }
 
 // ok
+// Verifica e atualiza periodicamente o status de todos os pontos
 func statusDosPontos() {
 	for _, ponto := range empresa.Pontos {
 		ponto_conectado := pontoEstaConectado(ponto)
@@ -161,6 +167,7 @@ func statusDosPontos() {
 }
 
 // ok
+// Determina se um ponto está conectado com base em regras de negócio
 func pontoEstaConectado(ponto string) bool {
 	ponto_desta_empresa := false
 	for _, pontoDaEmpresa := range empresa.Pontos {
@@ -180,6 +187,8 @@ func pontoEstaConectado(ponto string) bool {
 }
 
 // ok
+// Cancela reservas em pontos que ficaram desconectados
+// Notifica os clientes afetados via MQTT
 func cancelaReservasPorPontosDesconectados(ponto string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -206,7 +215,8 @@ func cancelaReservasPorPontosDesconectados(ponto string) {
 }
 
 // ok
-// entre servidores
+// Realiza requisições REST para outros servidores
+// Abstrai detalhes de comunicação HTTP entre servidores
 func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{}) error {
 	json_corpo, erro := json.Marshal(corpo)
 	if erro != nil {
@@ -240,7 +250,8 @@ func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{})
 }
 
 // ok
-// coordenar reservas com outros servidores via REST
+// Coordena reservas com outros servidores via API REST
+// Garante consistência nas reservas entre múltiplos servidores
 func handleReservaRest(placaVeiculo string, pontos []string) bool {
 	// Filtra pontos que não pertencem a este servidor
 	var pontos_de_outros_servidores []string
@@ -335,6 +346,8 @@ func handleReservaRest(placaVeiculo string, pontos []string) bool {
 }
 
 // ok
+// Tenta reservar pontos em outros servidores quando
+// os pontos solicitados não pertencem à empresa atual
 func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool {
 	ip_servidor_atual := ip_pc
 	var porta string
@@ -383,6 +396,7 @@ func reservaPontosEmOutrosServidores(placaVeiculo string, pontos []string) bool 
 }
 
 // ok
+// Handler para confirmar pré-reservas e convertê-las em reservas
 func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -440,7 +454,8 @@ func handleConfirmaPreReserva(responseW http.ResponseWriter, request *http.Reque
 }
 
 // ok
-// com outros servidores via REST
+// Coordena pré-reservas com outros servidores via REST
+// Garante que o cliente possa pré-reservar pontos em diferentes empresas
 func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
 	for _, ponto := range pontos {
@@ -536,6 +551,8 @@ func handlePreReservaRest(placaVeiculo string, pontos []string) bool {
 }
 
 // ok
+// Confirma pré-reservas em outros servidores
+// Converte pré-reservas em reservas definitivas em múltiplos servidores
 func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool {
 	var pontos_em_outros_servidores []string
 	for _, ponto := range pontos {
@@ -616,6 +633,7 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 }
 
 // ok
+// Endpoint para verificação de status do servidor
 func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 	responseW.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(responseW).Encode(map[string]string{
@@ -625,6 +643,8 @@ func handleStatus(responseW http.ResponseWriter, request *http.Request) {
 }
 
 // ok
+// Handler para processar solicitações de reserva
+// Recebidas de outros servidores ou clientes
 func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -711,6 +731,8 @@ func handleReserva(responseW http.ResponseWriter, request *http.Request) {
 }
 
 // ok
+// Handler para processar solicitações de cancelamento
+// Libera pontos reservados para uso futuro
 func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(responseW, "Método inválido", http.StatusMethodNotAllowed)
@@ -758,7 +780,8 @@ func handleCancelamento(responseW http.ResponseWriter, request *http.Request) {
 }
 
 // ok
-// em outro servidor
+// Cancela reservas em outros servidores
+// Usada quando há falha na coordenação entre servidores
 func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) {
 	ip_servidor_atual := ip_pc
 	var porta string
@@ -790,6 +813,8 @@ func cancelaReservaRest(empresaID string, placaVeiculo string, pontos []string) 
 }
 
 // ok
+// Sistema de timeout para reservas
+// Libera automaticamente reservas após período definido
 func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 	go func() {
 		time.Sleep(tempo)
@@ -815,6 +840,8 @@ func liberaPorTimeout(placa string, pontos []string, tempo time.Duration) {
 }
 
 // ok
+// Coordena cancelamento de pré-reservas entre servidores
+// Garante liberação consistente dos pontos pré-reservados
 func handleCancelaPreReservaRest(placaVeiculo string, pontos []string) bool {
 	//cancelar pré-reservas em todos os servidores
 	req := ReservaRequest{

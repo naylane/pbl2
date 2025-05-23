@@ -13,6 +13,7 @@ var mqttClient mqtt.Client
 var ip_pc_broker string = "172.16.103.1"
 
 // ok
+// Publica mensagem em um tópico MQTT específico
 func publicaMensagemMqtt(client mqtt.Client, topico string, mensagem string) {
 	token := client.Publish(topico, 0, false, mensagem)
 	token.Wait()
@@ -20,11 +21,13 @@ func publicaMensagemMqtt(client mqtt.Client, topico string, mensagem string) {
 }
 
 // ok
+// Retorna o cliente MQTT atual
 func getClienteMqtt() mqtt.Client {
 	return mqttClient
 }
 
 // ok
+// Inicializa a conexão MQTT com o broker e configura inscrição nos tópicos
 func inicializaMqtt(idCliente string) {
 	empresa = GetEmpresaPorId(idCliente)
 
@@ -49,6 +52,7 @@ func inicializaMqtt(idCliente string) {
 }
 
 // ok
+// Verifica se um ponto de recarga pertence à empresa atual
 func pontoDestaEmpresa(ponto string) bool {
 	for _, p := range empresa.Pontos {
 		if p == ponto {
@@ -59,6 +63,8 @@ func pontoDestaEmpresa(ponto string) bool {
 }
 
 // ok
+// Handler central que processa mensagens recebidas via MQTT
+// Identifica o tipo de operação pelo código e direciona para a função apropriada
 func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 	list := strings.Split(string(msg.Payload()), ",")
 	fmt.Printf("[Servidor recebeu]: %s\n", msg.Payload())
@@ -132,6 +138,8 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 }
 
 // ok
+// Implementa o mecanismo de pré-reserva de pontos de recarga
+// Verifica a disponibilidade dos pontos e marca como pré-reservados
 func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
 	pontos_locais := false
 	falha_local := false
@@ -210,6 +218,8 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 }
 
 // ok
+// Converte uma pré-reserva em reserva definitiva
+// Verifica se os pontos ainda estão pré-reservados para o veículo
 func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
 	pontos_locais := false
 	sucesso := true
@@ -275,6 +285,8 @@ func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, pla
 }
 
 // ok
+// Cancela uma pré-reserva feita anteriormente
+// Libera os pontos que estavam pré-reservados para este veículo
 func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
 	pontos_locais := false
 	cancelou := false
@@ -310,6 +322,8 @@ func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, plac
 }
 
 // ok
+// Sistema de timeout para pré-reservas
+// Libera automaticamente uma pré-reserva após um período definido
 func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration) {
 	go func() {
 		time.Sleep(tempo)
@@ -332,6 +346,8 @@ func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration)
 }
 
 // ok
+// Implementa a reserva direta de pontos de recarga
+// Coordena com outros servidores via REST para garantir consistência
 func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo string) {
 	//pontos locais primeiro
 	pontos_locais := false
@@ -436,6 +452,8 @@ func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo st
 }
 
 // ok
+// Cancela reservas existentes para um veículo específico
+// Remove as reservas locais e notifica o cliente
 func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -482,6 +500,8 @@ func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 }
 
 // ok
+// Libera pontos de recarga após conclusão da viagem
+// Remove as reservas dos pontos e atualiza o estado do sistema
 func liberaPontosConcluiuViagem(client mqtt.Client, placaVeiculo string, pontos []string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
