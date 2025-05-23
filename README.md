@@ -1,8 +1,9 @@
-<h2 align="center">Recarga de carros elétricos inteligente</h2>
+<h2 align="center">Programação de recargas para viagens em carros elétricos</h2>
 <h4 align="center">Projeto da disciplina TEC502 - Concorrência e Conectividade.</h4>
 
-<p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando uma arquitetura cliente-servidor baseada no protocolo TCP/IP, o sistema permite que veículos solicitem recargas, informem sua localização atual gerada de forma randômica e recebam recomendações para pontos de recarga próximos.</p>
-<p align="center">O objetivo é otimizar o processo de recarga, garantindo eficiência e gerenciamento adequado da concorrência.</p>
+<p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando arquiteturas MQTT, API's REST e Clientes, o sistema permite que veículos programem viagens reservando pontos necessário para recarregar, informem a cidade de origem e a cidade de destino, estado atual da bateria e sua autonomia e recebam recomendações para pontos de recarga para atender ao seu percurso.</p>
+<p align="center">O projeto consiste em um sistema distribuído, para simular / gerenciar uma frota de veículos e empresas na região nordeste, utilizando comunicação via MQTT e API REST, tudo orquestrado com Docker. Ele é composto por múltiplos serviços (servidores e veículos), que se comunicam entre si e com um broker MQTT. Cujo objetivo é otimizar o processo de recarga, garantindo eficiência e gerenciamento adequado da concorrência. </p>
+
 
 [Relatório](https://docs.google.com/document/d/1NYiV0I9dxnWGn_qsMTTqNb5xW55k6mtO/edit?pli=1)
 ## Sumário
@@ -32,14 +33,14 @@
 
 ## Introdução
 
-O presente sistema foi desenvolvido para implementar gerenciamento de concorrência distribuída entre cliente e servidores simulando requisições para diferentes empresas atômicas no contexto de recarga de veículos elétricos. O projeto viabiliza a solicitação e gestão de recargas por parte dos veículos, utilizando MQTT e API REST e desenvolvimento em Go, com suporte para múltiplas conexões simultâneas.  
+O presente sistema foi desenvolvido para implementar gerenciamento de concorrência distribuída entre veículos e empresas na região nordeste utilizando comunicação via MQTT e REST, simulando requisições atômicas para diferentes empresas no contexto de recarga de veículos elétricos. O projeto viabiliza a solicitação e gestão de recargas por parte dos veículos, utilizando MQTT e API REST e desenvolvimento em Go, com suporte para múltiplas conexões simultâneas. Simulando um ambiente realista onde múltiplos servidores e veículos trocam informações em tempo real, como em sistemas de transporte.
 
 A aplicação está contida em containers Docker, que isolam e orquestram a execução dos serviços. Onde:
-- Os servidores gerenciam os pontos de recarga disponíveis, recebe solicitações dos veículos, calcula distâncias e administra as reservas comunicando-se com outros servidores. Sendo responsáveis por validar as transações de recarga, verificando a disponibilidade dos pontos, e tratando o armazenamento das informações. 
-- O veículo, por sua vez, permite ao usuário solicitar planejar uma viagem de longa distância necessitando de múltiplas recargas no percurso, informando a cidade de origem e destino para consultar pontos de recarga disponíveis e realizar a operação. 
-- Já o ponto de recarga, é responsável por conectar-se ao servidor da sua respectiva empresa quando estiver disponível para realização de recargas. Mantendo informações como id, localização, sua disponibilidade ou se já está reservado. 
+- broker: serviço de mensaegns MQTT, usando a imagem do Eclipse Mosquitto. Permite que os outros serviços troquem mensagens de forma assíncrona.
+- servidores: expõe uma API REST na sua respectiva porta e se comunica com o broker MQTT. Recebe variáveis de ambiente para identificar servidores e portas.
+- veiculo: Simula um veículo elétrico, que também se comunica com o broker MQTT.
 
-Porcionando então, uma solução que permite aos veículos planejar viagens de longa distância com múltiplas recargas, reservar e utilizar pontos de recarga de diferentes empresas de forma otimizada com uma única solicitação.  
+Porcionando então, uma solução que permite aos veículos planejar viagens de longa distância com múltiplas recargas, reservar e utilizar pontos de recarga de diferentes empresas de forma otimizada com uma única solicitação.
 
 ## Arquitetura do Sistema
 
