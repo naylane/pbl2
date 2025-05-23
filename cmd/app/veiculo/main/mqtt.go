@@ -8,22 +8,18 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Estabelece conexão MQTT com o broker e gerencia troca de mensagens
-// Retorna true se a operação foi bem-sucedida, false caso contrário
-func conecta(mensagem string, idClient string) bool {
-	// Configuração da conexão com o broker MQTT
+// Faz envio e recepção com conexão única
+func conecta(mensagem string, id_veiculo string) bool {
 	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
-	opts.SetClientID(idClient)
+	opts.SetClientID(id_veiculo)
 
 	var respostaRecebida bool
 	var operacaoSucesso bool
 
-	// Configura handler para processar respostas do servidor
-	topicResponse := "mensagens/cliente/" + idClient
+	topicResponse := "mensagens/cliente/" + id_veiculo
 	opts.OnConnect = func(c mqtt.Client) {
-		fmt.Printf("\nConectado ao broker: Cliente %s.\n", idClient)
+		fmt.Printf("\nConectado ao broker: Cliente %s.\n", id_veiculo)
 
-		// Inscreve-se no tópico de resposta específico para este cliente
 		if token := c.Subscribe(topicResponse, 0, func(client mqtt.Client, msg mqtt.Message) {
 			mensagemRecebida := string(msg.Payload())
 			fmt.Printf("\n[Resposta]: %s\n", mensagemRecebida)
@@ -86,8 +82,7 @@ func conecta(mensagem string, idClient string) bool {
 				fmt.Println("\n [info] Pré-reserva cancelada.")
 				respostaRecebida = true
 				operacaoSucesso = true
-			case "falha_prereserva":
-				// Processamento de falha na pré-reserva
+			case "erro_prereserva":
 				if len(parts) >= 3 {
 					fmt.Printf("\n [Falha] pré-reserva: %s\n", parts[2])
 				} else {

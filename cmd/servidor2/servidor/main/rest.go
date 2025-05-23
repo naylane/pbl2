@@ -216,29 +216,29 @@ func cancelaReservasPorPontosDesconectados(ponto string) {
 func requisicaoRest(metodo, url string, corpo interface{}, resposta interface{}) error {
 	json_corpo, erro := json.Marshal(corpo)
 	if erro != nil {
-		return fmt.Errorf("erro ao codificar JSON: %v", erro)
+		return fmt.Errorf("Falha na codificação do JSON: %v", erro)
 	}
 
 	req, erro := http.NewRequest(metodo, url, bytes.NewBuffer(json_corpo))
 	if erro != nil {
-		return fmt.Errorf("erro ao criar requisição: %v", erro)
+		return fmt.Errorf("Falha na criação de requisição: %v", erro)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, erro := client.Do(req)
 	if erro != nil {
-		return fmt.Errorf("erro ao fazer requisição: %v", erro)
+		return fmt.Errorf("Falha na realização de requisição: %v", erro)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status de resposta inválido: %d", resp.StatusCode)
+		return fmt.Errorf("Falha no status de resposta: %d", resp.StatusCode)
 	}
 
 	if resposta != nil {
 		if err := json.NewDecoder(resp.Body).Decode(resposta); err != nil {
-			return fmt.Errorf("erro ao decodificar resposta: %v", err)
+			return fmt.Errorf("Falha na decodificação da resposta: %v", err)
 		}
 	}
 

@@ -180,11 +180,11 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 					if strings.HasPrefix(ponto_de_recarga.Reservado, "PRE_") {
 						outroVeiculo := ponto_de_recarga.Reservado[4:]
 						publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
-							fmt.Sprintf("falha_prereserva,%s,Ponto %s já está pré-reservado pelo veículo [%s]",
+							fmt.Sprintf("erro_prereserva,%s,Ponto %s já está pré-reservado pelo veículo [%s]",
 								ponto, ponto, outroVeiculo))
 					} else {
 						publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
-							fmt.Sprintf("falha_prereserva,%s,Ponto %s já está reservado pelo veículo [%s]",
+							fmt.Sprintf("erro_prereserva,%s,Ponto %s já está reservado pelo veículo [%s]",
 								ponto, ponto, ponto_de_recarga.Reservado))
 					}
 					falha_local = true
