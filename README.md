@@ -7,7 +7,6 @@
 [Relatório](https://docs.google.com/document/d/1NYiV0I9dxnWGn_qsMTTqNb5xW55k6mtO/edit?pli=1)
 
 ## Sumário
-- [Sumário](#sumário)
 - [Introdução](#introdução)
 - [Arquitetura do Sistema](#arquitetura-do-sistema)
   - [Broker MQTT](#broker-mqtt)
