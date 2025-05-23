@@ -1,21 +1,20 @@
 <h2 align="center">Planejamento de viagens para recargas de veículos elétricos</h2>
 <h4 align="center">Projeto da disciplina TEC502 - Concorrência e Conectividade.</h4>
 
-<p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando arquiteturas MQTT, API's REST e Clientes, o sistema permite que veículos programem viagens reservando pontos necessário para recarregar, informem a cidade de origem e a cidade de destino, estado atual da bateria e sua autonomia e recebam recomendações para pontos de recarga para atender ao seu percurso.</p>
-<p align="center">O projeto consiste em um sistema distribuído, para simular / gerenciar uma frota de veículos e empresas na região nordeste, utilizando comunicação via MQTT e API REST, tudo orquestrado com Docker. Ele é composto por múltiplos serviços (servidores e veículos), que se comunicam entre si e com um broker MQTT. Cujo objetivo é otimizar o processo de recarga, garantindo eficiência e gerenciamento adequado da concorrência. </p>
-
+<p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando arquiteturas MQTT e API's REST, o sistema permite que veículos programem viagens reservando pontos necessários para recarregar, informem a cidade de origem e a cidade de destino, o estado atual da bateria e sua autonomia e recebam recomendações de pontos de recarga para atender ao seu percurso.</p>
+<p align="center">O projeto consiste em um sistema distribuído, para simular / gerenciar veículos e empresas na região nordeste, utilizando comunicação via MQTT e API REST, tudo orquestrado com Docker. Ele é composto por múltiplos serviços (servidores e veículos), que comunicam entre si e com um broker MQTT. O objetivo é otimizar o processo de recarga, garantindo eficiência e gerenciamento adequado da concorrência.</p>
 
 [Relatório](https://docs.google.com/document/d/1NYiV0I9dxnWGn_qsMTTqNb5xW55k6mtO/edit?pli=1)
-## Sumário
 
+## Sumário
 - [Sumário](#sumário)
 - [Introdução](#introdução)
 - [Arquitetura do Sistema](#arquitetura-do-sistema)
+  - [Broker MQTT](#broker-mqtt)
   - [Servidor](#servidor)
-  - [MQTT](#mqtt)
   - [API REST](#api-rest)
   - [Veículo](#veículo)
-  - [Comunicação](#comunicação)
+  - [Fluxo de Comunicação](#fluxo-de-comunicação)
   - [Funcionalidades Principais](#funcionalidades-principais)
 - [Protocolo de Comunicação](#protocolo-de-comunicação)
   - [Dados e Estado](#dados-e-estado)
@@ -33,102 +32,93 @@
 
 ## Introdução
 
-O presente sistema foi desenvolvido para implementar gerenciamento de concorrência distribuída entre veículos e empresas na região nordeste utilizando comunicação via MQTT e REST, simulando requisições atômicas para diferentes empresas no contexto de recarga de veículos elétricos. O projeto viabiliza a solicitação e gestão de recargas por parte dos veículos, utilizando MQTT e API REST e desenvolvimento em Go, com suporte para múltiplas conexões simultâneas. Simulando um ambiente realista onde múltiplos servidores e veículos trocam informações em tempo real, como em sistemas de transporte.
+O sistema simula um ambiente distribuído de recarga de veículos elétricos, com múltiplos servidores (empresas) e veículos, utilizando comunicação via MQTT e API REST. O objetivo é permitir que veículos planejem viagens de longa distância, reservando pontos de recarga de diferentes empresas de forma otimizada, com controle de concorrência e integridade dos dados.
 
-A aplicação está contida em containers Docker, que isolam e orquestram a execução dos serviços. Onde:
-- broker: serviço de mensaegns MQTT, usando a imagem do Eclipse Mosquitto. Permite que os outros serviços troquem mensagens de forma assíncrona.
-- servidores: expõe uma API REST na sua respectiva porta e se comunica com o broker MQTT. Recebe variáveis de ambiente para identificar servidores e portas.
-- veiculo: Simula um veículo elétrico, que também se comunica com o broker MQTT.
+A aplicação é composta por:
+- **Broker**: serviço de mensageria MQTT (Eclipse Mosquitto), permitindo a troca de mensagens entre servidores e veículos.
+- **Servidores**: cada servidor representa uma empresa, expõe uma API REST e se comunica com outros serviços para gerenciar reservas, pré-reservas e cancelamentos.
+- **Veículo**: simula um cliente que planeja viagens, solicita reservas e interage com o sistema via terminal.
 
-Porcionando então, uma solução que permite aos veículos planejar viagens de longa distância com múltiplas recargas, reservar e utilizar pontos de recarga de diferentes empresas de forma otimizada com uma única solicitação.
+Todos os serviços são orquestrados com Docker Compose, garantindo isolamento, escalabilidade e fácil simulação de concorrência distribuída.
 
 ## Arquitetura do Sistema
 
-A solução foi desenvolvida utilizando a arquitetura de comunicação MQTT e API REST, onde a comunicação entre as partes ocorre ... Seu uso garante a ... proporcionando uma comunicação confiável entre os módulos do sistema: servidores e veículos. 
+A arquitetura utiliza MQTT para comunicação assíncrona e API REST para coordenação entre servidores. Os dados são persistidos em arquivos JSON montados como volumes nos containers.
 
-A troca de dados ocorre via ..., com mensagens estruturadas em formato JSON. O sistema foi projetado para funcionar em ambiente de containers Docker interconectados por uma rede interna definida no docker-compose, garantindo isolamento, escalabilidade e simulação de concorrência distribuída. Onde:
-
-- **Servidores**: Gerencia as solicitações, consulta os pontos, calcula distâncias e gerenciar as solicitações de reservas.
-- **Veículo**: Responsável por programar viagens, informar cidade de origem e destino e confirmar reservas.
+### Broker MQTT
+- Utiliza a imagem oficial do Eclipse Mosquitto.
+- Viabiliza a comunicação entre todos os serviços.
+- Exposto na porta 1883.
 
 ### Servidor
-O servidor atua como o ... do sistema, responsável por intermediar a comunicação entre veículos e outros servidores, escutando conexões ... em uma porta definida. As principais responsabilidades do servidor incluem:
-- Gerenciar conexões ... de veículos e outros servidores.
-- Gerenciar solicitações de recarga dos veículos, ...
-- Gerenciar as reservas, ...  
-O servidor foi desenvolvido em Go, utilizando recursos como goroutines para o tratamento concorrente de conexões. Isso garante maior performance e segurança no acesso aos dados compartilhados.
-
-### MQTT
+- Desenvolvido em Go.
+- Expõe uma API REST.
+- Gerencia dados de empresas, regiões e veículos em arquivos JSON.
+- Recebe solicitações de veículos via MQTT, coordena reservas locais e remotas.
+- Utiliza goroutines e mutexes para concorrência segura.
 
 ### API REST
+- Usada para coordenação de reservas/pré-reservas/cancelamentos entre servidores.
+- Endpoints principais: `/api/prereserva`, `/api/reserva`, `/api/cancelamento`.
+- Recebe e responde requisições em JSON.
 
 ### Veículo
-O veículo é implementado como cliente ... onde o usuário interage por meio de um menu via terminal que permite:
-- Enviar cidade de origem e destino, bateria atual e autonomia ao programar viagem.
-- Receber rota de viagem, com fila de espera e distância.
-- Escolher um ponto de recarga para reservar e efetuar recarga  
-O sistema é capaz de manter sessões interativas com o servidor, permitindo que o usuário envie solicitações de recarga e consulte seu histórico de recargas pendentes para efetuar o pagamento posteriormente.  
+- Implementado em Go, com interface via terminal.
+- Permite ao usuário:
+  - Informar origem, destino, bateria e autonomia.
+  - Receber rota sugerida com pontos de recarga necessários.
+  - Solicitar pré-reserva, confirmar reserva.
+- Comunica-se via MQTT, publicando solicitações e recebendo respostas em tópicos exclusivos.
 
-A comunicação entre as partes ocorre via **sockets TCP/IP** conforme ilustração da arquitetura à seguir:
-
-<div align="center">  
-  <img align="center" width=100% src= public/sistema-recarga.png alt="Comunicação sistema">
-  <p><em>Arquitetura do Sistema</em></p>
-</div>
-
-### Comunicação
-
-- Veículo programa viagem enviando seus dados.
--
-- 
+### Fluxo de Comunicação
+1. **Veículo** publica solicitação (ex: pré-reserva) via MQTT.
+2. **Servidor** recebe, processa e responde via MQTT.
+3. Se necessário, servidor coordena com outros servidores via REST.
+4. Resposta final é enviada ao veículo.
 
 ### Funcionalidades Principais
-
-- **Programação de Viagem**: O veículo pode programar uma viagem.
--
--
+- Programação de viagem com sugestão de pontos de recarga.
+- Pré-reserva e confirmação de pontos.
+- Cancelamento e liberação automática por timeout.
+- Concorrência segura e atomicidade nas operações distribuídas.
 
 ## Protocolo de Comunicação
-A comunicação entre os clientes e o servidor é realizada por meio de ... utilizando mensagens estruturadas em JSON. A escolha do formato JSON foi decorrente da necessidade de garantia de entrega confiável e legível, além do formato ser leve, compatível com diversos ambientes e amplamente adotado em sistemas distribuídos. Cada mensagem permite a troca de dados e encapsulam ações como identificação dos clientes, solicitação de recarga, envio de disponibilidade, confirmação de reservas, entre outros.
+- Mensagens estruturadas em JSON.
+- MQTT para comunicação assíncrona entre veículos e servidores.
+- REST para coordenação entre servidores.
 
 ### Dados e Estado
-Os dados do sistema como região de cobertura e localização dos pontos de recarga cadastrados, são carregados a partir de arquivos JSON ao iniciar o servidor e permanecem em memória, funcionando como um cache de alta performance para as operações. Isso reduz a latência e permite respostas rápidas às requisições.  
+- Dados de empresas, regiões e veículos em arquivos JSON.
+- Carregados em memória ao iniciar o servidor.
+- Atualizados e persistidos conforme operações.
 
 ## Conexões Simultâneas
-O servidor foi projetado para suportar múltiplas conexões simultâneas utilizando goroutines, nativas da linguagem Go. ...
+- Servidores suportam múltiplas conexões simultâneas usando goroutines.
+- Concorrência controlada com mutexes para evitar condições de corrida.
 
 ## Gerenciamento de Concorrência
-Para garantir a integridade dos dados durante operações concorrentes como por exemplo a atualizações das disponibilidades dos pontos de recarga, registro de reservas, modificação em estruturas de dados, entre outras. Foi implementado o uso de mutexes - locks de exclusão mútua. 
-
-O controle de exclusão mútua assegura que múltiplas goroutines não modifiquem simultaneamente estruturas de dados compartilhadas, como a disponibilidade de um ponto de recarga.  
-
-Funcionamento:  
-- Lock: Antes da operação crítica, a goroutine realiza um mutex.Lock().  
-- Seção Crítica: A operação crítica é executada de forma exclusica onde os dados são validados e atualizados de forma segura.
-- Unlock: Após a operação, o mutex é liberado com mutex.Unlock(), permitindo que outras goroutines acessem os dados.  
-
-Essa abordagem impede condições de corrida, evitando problemas como múltiplos veículos tentando ocupar a mesma posição na reserva de um determinado ponto de recarga simultaneamente.
+- Uso de mutexes (locks) para garantir exclusão mútua em operações críticas.
+- Cada ponto de recarga possui um lock próprio.
+- Exemplo:
+  - Antes de reservar um ponto, o servidor executa `lock.Lock()`.
+  - Após a operação, libera com `lock.Unlock()`.
+- Garante que dois veículos não reservem o mesmo ponto simultaneamente.
 
 ### Garantia de Reserva e Integridade
-Ao solicitar uma recarga, o veículo envia sua bateria e autonomia atual, cidade de origem e cidade de destino ao servidor. O servidor, então:
-
-- 
--
--
-
-Após a confirmar a reserva, o veículo é adicionado à reserva do ponto selecionado. Para garantir a integridade da operação, cada etapa é realizada com controle de concorrência utilizando mutexes, impedindo que dois veículos reservem a mesma posição simultaneamente.
+- Operações de reserva são atômicas: ou todos os pontos são reservados, ou nenhum.
+- Se algum ponto falhar, as reservas temporárias são canceladas.
+- Timeout automático libera pontos não utilizados.
 
 ## Execução com Docker
-A simulação do sistema é feita utilizando Docker-Compose, com containers para os Servidores e os Veículos. O Docker Compose permite as partes do sistema compartilhar uma rede interna privada, proporcionando a troca de mensagens ... entre os containers.  
-
-A imagem Docker do sistema é construída com base nos Dockerfiles que inclui as dependências necessárias, mantendo o ambiente leve e eficiente.
+- O sistema é simulado com Docker Compose.
+- Cada serviço (broker, servidores, veículos) roda em um container isolado.
+- Volumes mapeiam arquivos de dados para persistência.
 
 ## Como Executar
 ### Pré-requisitos
-Certifique-se de ter os seguintes softwares instalados na máquina:
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
-- [Go](https://go.dev/) *Opcional – Para testes locais fora dos contêineres
+- [Go](https://go.dev/) (opcional, para testes locais)
 
 ### Passo a passo
 1. Clone o repositório:
@@ -138,50 +128,40 @@ Certifique-se de ter os seguintes softwares instalados na máquina:
    ```
 2. Compile as imagens Docker e inicie o sistema:
    ```bash
-   docker-compose up build -d
+   docker compose up --build -d
    ```
-Isso iniciará os contêineres do servidor, pontos de recarga e veículos, todos conectados em uma rede Docker interna.
-
-3. Em seguida execute para ter acesso a interface dos clientes.
-    ```bash
-    docker-compose exec veiculo sh
-    ```
-    ou
-    ```bash
-    docker-compose exec servidor sh
-    ```
-4. Por fim ao entrar no terminal do cotainer, executa o último comando, para executar a aplicação.
-    ```bash
-    ./veiculo
-    ```
-    ou 
-    ```bash
-    ./servidor
-    ```
+3. Acesse o terminal do veículo ou servidor:
+   ```bash
+   docker compose exec veiculo sh
+   # ou
+   docker compose exec servidor1 sh
+   ```
+4. Execute a aplicação dentro do container:
+   ```bash
+   ./veiculo
+   # ou
+   ./servidor
+   ```
 5. Para encerrar:
    ```bash
-   docker-compose down
+   docker compose down
+   ```
+6. Para ver logs:
+   ```bash
+   docker compose logs -f servidor1
+   # ou
+   docker compose logs -f veiculo
    ```
 
-Caso deseje ver os logs do servidor, execute em outro terminal:  
-    ```
-    docker compose logs -f servidor
-    ```  
-    (servidor ou veiculo)
 ## Tecnologias Utilizadas
-- Linguagem: Go (Golang)
-- Comunicação: sockets TCP/IP
-- Execução: Docker, Docker Compose
-- Mock de dados: JSON
+- Go (Golang)
+- MQTT (Eclipse Mosquitto)
+- REST (API HTTP)
+- Docker e Docker Compose
+- JSON para persistência de dados
 
 ## Conclusão
-O desenvolvimento deste sistema permitiu aplicar na prática conceitos fundamentais de redes de computadores, comunicação baseada em MQTT e API REST e concorrência distribuída. A arquitetura ... foi estruturada para garantir escalabilidade, paralelismo e integridade na troca de mensagens entre veículo e o servidores.  
-
-Com o uso de mutexes foi possível garantir o controle adequado de concorrência, especialmente no gerenciamento das reservas dos pontos e acesso as estruturas de dados. O sistema também se beneficiou da persistência temporária de dados em memória, otimizando a resposta às requisições.  
-
-Além disso, a utilização do Docker e do Docker Compose tornou possível a simulação de múltiplos componentes operando simultaneamente em um ambiente isolado, facilitando os testes e validações da aplicação.  
-
-Como resultado, o sistema atendeu aos requisitos propostos, oferecendo uma solução eficiente e didática para o gerenciamento de recargas de veículos elétricos com requisições atômicas. A experiência proporcionou uma compreensão mais profunda sobre infraestrutura de comunicação em tempo real, concorrência segura, e práticas de desenvolvimento com conteinerização.  
+O sistema demonstra na prática conceitos de concorrência distribuída, comunicação em tempo real e integração de múltiplos serviços. O uso de MQTT e REST permite flexibilidade e robustez na troca de mensagens, enquanto Docker garante portabilidade e fácil simulação. O controle de concorrência com mutexes assegura integridade nas operações de reserva, mesmo com múltiplos veículos e servidores atuando simultaneamente.
 
 ## Desenvolvedoras
 <table>
@@ -197,4 +177,4 @@ Donovan, A. A. and Kernighan, B. W. (2016). The Go Programming Language. Addison
 Merkel, D. (2014). Docker: lightweight Linux containers for consistent development and deployment. Linux Journal, 2014(239), 2.    
 Silberschatz, A., Galvin, P. B., and Gagne, G. (2018). Operating System Concepts (10th ed.). Wiley.   
 Stevens, W. R. (1998). UNIX Network Programming, Volume 1: The Sockets Networking API (2nd ed.). Prentice Hall.    
-Tanenbaum, A. S. and Van Steen, M. (2007). Distributed Systems: Principles and Paradigms (2nd ed.). Pearson Prentice Hall.   
+Tanenbaum, A. S. and Van Steen, M. (2007). Distributed Systems: Principles and Paradigms (2nd ed.). Pearson Prentice Hall.
