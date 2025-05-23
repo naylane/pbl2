@@ -59,7 +59,7 @@ A arquitetura utiliza MQTT para comunicação assíncrona e API REST para coorde
 
 ### API REST
 - Usada para coordenação de reservas/pré-reservas/cancelamentos entre servidores.
-- Endpoints principais: `/api/prereserva`, `/api/reserva`, `/api/cancelamento`.
+- Endpoints principais: `/api/confirmar-prereserva`, `/api/reserva`, `/api/cancelamento`.
 - Recebe e responde requisições em JSON.
 
 ### Veículo
