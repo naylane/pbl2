@@ -4,7 +4,7 @@
 <p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando MQTT e API REST, o sistema permite que veículos programem viagens reservando pontos necessários para recarregar, informem a cidade de origem e a cidade de destino, o estado atual da bateria e sua autonomia e recebam recomendações de pontos de recarga para atender ao seu percurso.</p>
 <p align="center">O projeto consiste em um sistema distribuído, para simular / gerenciar veículos e empresas na região nordeste, utilizando comunicação via MQTT e API REST, tudo orquestrado com Docker. Ele é composto por múltiplos serviços (servidores e veículos), que comunicam entre si e com um broker MQTT. O objetivo é otimizar o processo de recarga, garantindo eficiência e gerenciamento adequado da concorrência.</p>
 
-[Relatório](https://docs.google.com/document/d/1NYiV0I9dxnWGn_qsMTTqNb5xW55k6mtO/edit?pli=1)
+[Relatório]
 
 ## Sumário
 - [Introdução](#introdução)
