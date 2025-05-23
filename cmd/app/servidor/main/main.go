@@ -5,8 +5,9 @@ import (
 	"os"
 )
 
+// ok
 func main() {
-	abreArquivoEmpresas()
+	AbreArquivoEmpresas()
 	GetPontosDeRecargaJson()
 	// Le variável de ambiente do docker-compose
 	idEmpresa := os.Getenv("ID")

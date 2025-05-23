@@ -10,22 +10,26 @@ import (
 
 var empresa Empresa
 var mqttClient mqtt.Client
+var ip_pc_broker string = "172.16.103.1"
 
+// ok
 func publicaMensagemMqtt(client mqtt.Client, topico string, mensagem string) {
 	token := client.Publish(topico, 0, false, mensagem)
 	token.Wait()
 	fmt.Printf("\nMensagem enviada para %s: %s\n", topico, mensagem)
 }
 
+// ok
 func getClienteMqtt() mqtt.Client {
 	return mqttClient
 }
 
+// ok
 func inicializaMqtt(idCliente string) {
 	empresa = GetEmpresaPorId(idCliente)
 
-	//O servidor se conecta via TCP ao broker
-	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
+	//O servidor se conecta via TCP ao broker - Ip pc do broker aqui
+	opts := mqtt.NewClientOptions().AddBroker("tcp://" + ip_pc_broker + ":1883")
 	opts.SetClientID(idCliente)
 
 	opts.OnConnect = func(c mqtt.Client) {
@@ -44,7 +48,8 @@ func inicializaMqtt(idCliente string) {
 	}
 }
 
-func pertenceAEstaEmpresa(ponto string) bool {
+// ok
+func pontoDestaEmpresa(ponto string) bool {
 	for _, p := range empresa.Pontos {
 		if p == ponto {
 			return true
@@ -53,6 +58,7 @@ func pertenceAEstaEmpresa(ponto string) bool {
 	return false
 }
 
+// ok
 func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 	list := strings.Split(string(msg.Payload()), ",")
 	fmt.Printf("[Servidor recebeu]: %s\n", msg.Payload())
@@ -69,7 +75,7 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 	switch codigo {
 	case "1": // Reserva
 		fmt.Printf("\n Solicitação de reserva recebida - placa [%s]\n", placaVeiculo)
-		if pertenceAEstaEmpresa(pontos[0]) {
+		if pontoDestaEmpresa(pontos[0]) {
 			fmt.Printf("Processando reserva - ponto %s pertence a esta empresa.\n", pontos[0])
 			reservaMqtt(client, pontos, placaVeiculo)
 		} else {
@@ -82,7 +88,7 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 
 	case "4": // Pré-reserva
 		fmt.Printf("Solicitação de pré-reserva recebida - placa [%s] nos pontos: %v\n", placaVeiculo, pontos)
-		if len(pontos) > 0 && pertenceAEstaEmpresa(pontos[0]) {
+		if len(pontos) > 0 && pontoDestaEmpresa(pontos[0]) {
 			//primeiro ponto pertence a esta empresa - processa a reserva
 			preReservaMqtt(client, pontos, placaVeiculo)
 		} else if len(pontos) > 0 {
@@ -92,7 +98,7 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 
 	case "5": // Confirmar pré-reserva
 		fmt.Printf("Confirmação de pré-reserva recebida - placa [%s] nos pontos: %v\n", placaVeiculo, pontos)
-		if len(pontos) > 0 && pertenceAEstaEmpresa(pontos[0]) {
+		if len(pontos) > 0 && pontoDestaEmpresa(pontos[0]) {
 			confirmaPreReservaMqtt(client, pontos, placaVeiculo)
 		} else if len(pontos) > 0 {
 			// Coordena com outros servidores e responde ao cliente
@@ -110,7 +116,7 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 
 	case "6": // Cancelar pré-reserva
 		fmt.Printf("Solicitação de cancelamento de pré-reserva recebida - placa [%s] nos pontos: %v\n", placaVeiculo, pontos)
-		if len(pontos) > 0 && pertenceAEstaEmpresa(pontos[0]) {
+		if len(pontos) > 0 && pontoDestaEmpresa(pontos[0]) {
 			cancelaPreReservaMqtt(client, pontos, placaVeiculo)
 		} else if len(pontos) > 0 {
 			// Handle cancellation for points in other companies
@@ -125,9 +131,10 @@ func handleMensagens(client mqtt.Client, msg mqtt.Message) {
 	}
 }
 
+// ok
 func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
-	pontosLocais := false
-	falhaLocal := false
+	pontos_locais := false
+	falha_local := false
 	var pontosReservadosTemp []string
 	var indexesReservados []int
 
@@ -138,38 +145,38 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 		for _, pontoDaEmpresa := range empresa.Pontos {
 			if ponto == pontoDaEmpresa {
 				status_ponto.RLock()
-				estaConectado := status_ponto.status[ponto]
+				conectado := status_ponto.status[ponto]
 				status_ponto.RUnlock()
 
-				if !estaConectado {
+				if !conectado {
 					publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 						fmt.Sprintf("ponto_desconectado,%s,Ponto %s está desconectado", ponto, ponto))
-					falhaLocal = true
+					falha_local = true
 					lock.Unlock()
 					return
 				}
 
-				pontosLocais = true
-				pontoRecarga, index := GetPontoPorCidade(ponto)
+				pontos_locais = true
+				ponto_de_recarga, i := GetPontoPorCidade(ponto)
 
-				if pontoRecarga.Reservado == "" {
+				if ponto_de_recarga.Reservado == "" {
 					pontosReservadosTemp = append(pontosReservadosTemp, ponto)
-					indexesReservados = append(indexesReservados, index)
-				} else if pontoRecarga.Reservado == "PRE_"+placaVeiculo || pontoRecarga.Reservado == placaVeiculo {
+					indexesReservados = append(indexesReservados, i)
+				} else if ponto_de_recarga.Reservado == "PRE_"+placaVeiculo || ponto_de_recarga.Reservado == placaVeiculo {
 					pontosReservadosTemp = append(pontosReservadosTemp, ponto)
-					indexesReservados = append(indexesReservados, index)
+					indexesReservados = append(indexesReservados, i)
 				} else {
-					if strings.HasPrefix(pontoRecarga.Reservado, "PRE_") {
-						outroVeiculo := pontoRecarga.Reservado[4:]
+					if strings.HasPrefix(ponto_de_recarga.Reservado, "PRE_") {
+						outroVeiculo := ponto_de_recarga.Reservado[4:]
 						publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 							fmt.Sprintf("falha_prereserva,%s,Ponto %s já está pré-reservado pelo veículo [%s]",
 								ponto, ponto, outroVeiculo))
 					} else {
 						publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 							fmt.Sprintf("falha_prereserva,%s,Ponto %s já está reservado pelo veículo [%s]",
-								ponto, ponto, pontoRecarga.Reservado))
+								ponto, ponto, ponto_de_recarga.Reservado))
 					}
-					falhaLocal = true
+					falha_local = true
 					lock.Unlock()
 					return
 				}
@@ -179,11 +186,11 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 		lock.Unlock()
 	}
 
-	if falhaLocal {
+	if falha_local {
 		return
 	}
 
-	if pontosLocais {
+	if pontos_locais {
 		for i, ponto := range pontosReservadosTemp {
 			lock := ponto_locks[ponto]
 			lock.Lock()
@@ -202,8 +209,9 @@ func preReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeicul
 	}
 }
 
+// ok
 func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
-	pontosLocais := false
+	pontos_locais := false
 	sucesso := true
 
 	for _, ponto := range pontosParaReservar {
@@ -212,27 +220,27 @@ func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, pla
 
 		for _, pontoDaEmpresa := range empresa.Pontos {
 			if ponto == pontoDaEmpresa {
-				pontosLocais = true
-				pontoRecarga, index := GetPontoPorCidade(ponto)
+				pontos_locais = true
+				ponto_de_recarga, i := GetPontoPorCidade(ponto)
 
-				if pontoRecarga.Reservado == "PRE_"+placaVeiculo {
-					dadosRegiao.PontosDeRecarga[index].Reservado = placaVeiculo
+				if ponto_de_recarga.Reservado == "PRE_"+placaVeiculo {
+					dadosRegiao.PontosDeRecarga[i].Reservado = placaVeiculo
 					fmt.Printf("[SUCESSO] Ponto %s pré-reserva convertida para reserva para %s.\n",
 						ponto, placaVeiculo)
 
-				} else if pontoRecarga.Reservado == placaVeiculo {
+				} else if ponto_de_recarga.Reservado == placaVeiculo {
 					fmt.Printf("[INFO] Ponto %s já está reservado para %s.\n",
 						ponto, placaVeiculo)
 				} else {
-					if pontoRecarga.Reservado == "" {
+					if ponto_de_recarga.Reservado == "" {
 						fmt.Printf("[ERRO] Ponto %s não está pré-reservado (está vazio).\n", ponto)
-					} else if strings.HasPrefix(pontoRecarga.Reservado, "PRE_") {
-						outroVeiculo := pontoRecarga.Reservado[4:]
+					} else if strings.HasPrefix(ponto_de_recarga.Reservado, "PRE_") {
+						outra_placa := ponto_de_recarga.Reservado[4:]
 						fmt.Printf("[ERRO] Ponto %s está pré-reservado para outro veículo: %s.\n",
-							ponto, outroVeiculo)
+							ponto, outra_placa)
 					} else {
 						fmt.Printf("[ERRO] Ponto %s está reservado para outro veículo: %s.\n",
-							ponto, pontoRecarga.Reservado)
+							ponto, ponto_de_recarga.Reservado)
 					}
 					sucesso = false
 				}
@@ -241,7 +249,7 @@ func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, pla
 		lock.Unlock()
 	}
 
-	if pontosLocais {
+	if pontos_locais {
 		if sucesso {
 			salvaDadosPontos()
 			reservas_mutex.Lock()
@@ -266,9 +274,10 @@ func confirmaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, pla
 	}
 }
 
+// ok
 func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, placaVeiculo string) {
-	pontosLocais := false
-	cancelouAlgum := false
+	pontos_locais := false
+	cancelou := false
 
 	for _, ponto := range pontosParaReservar {
 		lock := ponto_locks[ponto]
@@ -276,12 +285,12 @@ func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, plac
 
 		for _, pontoDaEmpresa := range empresa.Pontos {
 			if ponto == pontoDaEmpresa {
-				pontosLocais = true
-				pontoRecarga, index := GetPontoPorCidade(ponto)
+				pontos_locais = true
+				ponto_de_recarga, i := GetPontoPorCidade(ponto)
 
-				if pontoRecarga.Reservado == "PRE_"+placaVeiculo {
-					dadosRegiao.PontosDeRecarga[index].Reservado = ""
-					cancelouAlgum = true
+				if ponto_de_recarga.Reservado == "PRE_"+placaVeiculo {
+					dadosRegiao.PontosDeRecarga[i].Reservado = ""
+					cancelou = true
 					fmt.Printf("[INFO] Ponto %s pré-reserva cancelada para %s.\n", ponto, placaVeiculo)
 				}
 			}
@@ -290,16 +299,17 @@ func cancelaPreReservaMqtt(client mqtt.Client, pontosParaReservar []string, plac
 		lock.Unlock()
 	}
 
-	if pontosLocais && cancelouAlgum {
+	if pontos_locais && cancelou {
 		salvaDadosPontos()
 		publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 			"prereserva_cancelada,Pré-reserva cancelada com sucesso")
-	} else if pontosLocais {
+	} else if pontos_locais {
 		publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 			"prereserva_cancelada,Nenhuma pré-reserva encontrada para cancelar")
 	}
 }
 
+// ok
 func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration) {
 	go func() {
 		time.Sleep(tempo)
@@ -309,9 +319,9 @@ func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration)
 			lock := ponto_locks[ponto]
 			lock.Lock()
 
-			pontoRecarga, index := GetPontoPorCidade(ponto)
-			if pontoRecarga.Reservado == "PRE_"+placa {
-				dadosRegiao.PontosDeRecarga[index].Reservado = ""
+			ponto_de_recarga, i := GetPontoPorCidade(ponto)
+			if ponto_de_recarga.Reservado == "PRE_"+placa {
+				dadosRegiao.PontosDeRecarga[i].Reservado = ""
 				fmt.Printf("[INFO] Pré-reserva para %s no ponto %s expirou e foi liberada automaticamente.\n", placa, ponto)
 			}
 
@@ -321,6 +331,7 @@ func liberaPreReservaTimeout(placa string, pontos []string, tempo time.Duration)
 	}()
 }
 
+// ok
 func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo string) {
 	//pontos locais primeiro
 	pontos_locais := false
@@ -335,10 +346,10 @@ func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo st
 			for _, pontoDaEmpresa := range empresa.Pontos {
 				if ponto == pontoDaEmpresa {
 					status_ponto.RLock()
-					estaConectado := status_ponto.status[ponto]
+					conectado := status_ponto.status[ponto]
 					status_ponto.RUnlock()
 
-					if !estaConectado {
+					if !conectado {
 						fmt.Printf("[ERRO] Tentativa de reserva no ponto %s falhou: ponto desconectado.\n", ponto)
 						publicaMensagemMqtt(client, "mensagens/cliente/"+placaVeiculo,
 							fmt.Sprintf("ponto_desconectado,%s,Ponto %s desconectado", ponto, ponto))
@@ -424,6 +435,7 @@ func reservaMqtt(client mqtt.Client, pontos_a_reservar []string, placaVeiculo st
 	}
 }
 
+// ok
 func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()
@@ -469,6 +481,7 @@ func cancelaMqtt(client mqtt.Client, placaVeiculo string) {
 
 }
 
+// ok
 func liberaPontosConcluiuViagem(client mqtt.Client, placaVeiculo string, pontos []string) {
 	reservas_mutex.Lock()
 	defer reservas_mutex.Unlock()

@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-type Empresa struct {
-	Id     string
-	Nome   string
-	Pontos []string
-}
-
 type Ponto struct {
 	ID        int     `json:"id"`
 	Cidade    string  `json:"cidade"`
@@ -44,13 +38,8 @@ type Veiculo struct {
 type DadosVeiculos struct {
 	Veiculos []Veiculo `json:"veiculos"`
 }
-type DadosEmpresas struct {
-	Empresas []Empresa `json:"empresas"`
-}
 
-var dadosEmpresas DadosEmpresas
-var dadosRegiao DadosRegiao
-
+//ok
 func AbreArquivoVeiculos() (DadosVeiculos, error) {
 	file, erro := os.Open("/app/veiculos.json")
 	if erro != nil {
@@ -66,6 +55,7 @@ func AbreArquivoVeiculos() (DadosVeiculos, error) {
 	return dadosVeiculos, nil
 }
 
+//ok
 func EscreveArquivoVeiculos(veiculo Veiculo) error {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -87,6 +77,7 @@ func EscreveArquivoVeiculos(veiculo Veiculo) error {
 	return erro
 }
 
+//ok
 func GetVeiculoPorPlaca(placa string) (Veiculo, int) {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -101,6 +92,7 @@ func GetVeiculoPorPlaca(placa string) (Veiculo, int) {
 	return Veiculo{}, 2
 }
 
+//ok
 func RemovePlacaVeiculo(placa string) error {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -126,6 +118,7 @@ func RemovePlacaVeiculo(placa string) error {
 	return encoder.Encode(dadosVeiculos)
 }
 
+//ok
 func GetVeiculosAtivosJson() ([]Veiculo, error) {
 	DadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -134,6 +127,7 @@ func GetVeiculosAtivosJson() ([]Veiculo, error) {
 	return DadosVeiculos.Veiculos, nil
 }
 
+//ok
 func AbreArquivoRegiao() (DadosRegiao, error) {
 	file, erro := os.Open("/app/regiao.json")
 	if erro != nil {
@@ -149,6 +143,7 @@ func AbreArquivoRegiao() (DadosRegiao, error) {
 	return dadosRegiao, nil
 }
 
+//ok
 func GetRotaJson() ([]string, error) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -157,6 +152,7 @@ func GetRotaJson() ([]string, error) {
 	return dadosRegiao.RotaSalvadorSaoLuis, nil
 }
 
+//ok
 func GetPontosDeRecargaJson() ([]Ponto, error) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -165,6 +161,7 @@ func GetPontosDeRecargaJson() ([]Ponto, error) {
 	return dadosRegiao.PontosDeRecarga, nil
 }
 
+//ok
 func GetPontosPorCidades(cidades []string) []Ponto {
 	var pontos []Ponto
 	pontosJson, erro := GetPontosDeRecargaJson()
@@ -181,6 +178,7 @@ func GetPontosPorCidades(cidades []string) []Ponto {
 	return pontos
 }
 
+//ok
 func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string) ([]string, int, int) {
 	var trechoViagem []string
 
@@ -201,6 +199,7 @@ func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string)
 	return trechoViagem, indexOrigem - 1, indexDestino - 1
 }
 
+//ok
 func GetPontoId(id int) (Ponto, int) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -215,68 +214,11 @@ func GetPontoId(id int) (Ponto, int) {
 	return Ponto{}, 2
 }
 
+//ok
 func GetTotalPontosJson() int {
 	pontos, erro := GetPontosDeRecargaJson()
 	if erro != nil {
 		return -1
 	}
 	return len(pontos)
-}
-
-func salvaDadosPontos() {
-	bytes, err := json.MarshalIndent(dadosRegiao, "", "  ")
-	if err != nil {
-		fmt.Println("Erro ao converter dados para JSON:", err)
-		return
-	}
-
-	err = os.WriteFile("regiao.json", bytes, 0644)
-	if err != nil {
-		fmt.Println("Erro ao salvar no arquivo regiao.json:", err)
-		return
-	}
-
-	fmt.Println("\nDados salvos no arquivo Região!")
-}
-
-func abreArquivoEmpresas() {
-	bytes, err := os.ReadFile("empresas.json")
-	if err != nil {
-		fmt.Println("Erro ao abrir arquivo JSON:", err)
-		return
-	}
-
-	err = json.Unmarshal(bytes, &dadosEmpresas)
-	if err != nil {
-		fmt.Println("Erro ao decodificar JSON:", err)
-		return
-	}
-}
-
-// 001 = N-Sul, 002 = N-Centro, 003 = N-Norte
-func GetEmpresaPorId(id string) Empresa {
-	var empresa Empresa
-	if len(dadosEmpresas.Empresas) > 0 {
-		for _, emp := range dadosEmpresas.Empresas {
-			if emp.Id == id {
-				empresa = emp
-			}
-		}
-	}
-	return empresa
-}
-
-func GetPontoPorCidade(cidade string) (Ponto, int) {
-	var ponto Ponto
-	var index int
-	pontos := dadosRegiao.PontosDeRecarga
-	if len(pontos) > 0 {
-		for i, pont := range pontos {
-			if pont.Cidade == cidade {
-				ponto = pont
-				index = i
-			}
-		}
-	}
-	return ponto, index
 }
