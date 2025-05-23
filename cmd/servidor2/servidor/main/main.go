@@ -6,15 +6,19 @@ import (
 )
 
 func main() {
+	// Carrega dados das empresas do arquivo JSON
 	AbreArquivoEmpresas()
+	// Carrega dados dos pontos de recarga
 	GetPontosDeRecargaJson()
-	// Le variável de ambiente do docker-compose
+
+	// Obtém o identificador da empresa das variáveis de ambiente
 	idEmpresa := os.Getenv("ID")
 	if idEmpresa == "" {
 		fmt.Println("Erro: ID não definido")
 		return
 	}
-	//Inicia o servidor REST
+
+	// Configura porta do servidor com base no ID da empresa
 	var porta string
 	switch idEmpresa {
 	case "001":
@@ -26,9 +30,12 @@ func main() {
 	default:
 		porta = "8080"
 	}
+
+	// Carrega dados específicos da empresa
 	empresa = GetEmpresaPorId(idEmpresa)
 	fmt.Printf("[Iniciando servidor] %s - %d pontos de recarga\n", empresa.Nome, len(empresa.Pontos))
-	//comunicação servidor-servidor
+
+	// Inicializa componentes do sistema
 	inicializa_rest(porta)
 	inicializaMonitoramentoDosPontos()
 	//comunicação com clientes
