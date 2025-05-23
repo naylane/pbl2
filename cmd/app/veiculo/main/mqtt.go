@@ -8,20 +8,22 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// envio e recepção com conexão única
+// Estabelece conexão MQTT com o broker e gerencia troca de mensagens
+// Retorna true se a operação foi bem-sucedida, false caso contrário
 func conecta(mensagem string, idClient string) bool {
+	// Configuração da conexão com o broker MQTT
 	opts := mqtt.NewClientOptions().AddBroker("tcp://broker:1883")
 	opts.SetClientID(idClient)
 
 	var respostaRecebida bool
 	var operacaoSucesso bool
 
-	//Configurar handler antes de conectar para mensagens de resposta
+	// Configura handler para processar respostas do servidor
 	topicResponse := "mensagens/cliente/" + idClient
 	opts.OnConnect = func(c mqtt.Client) {
 		fmt.Printf("\nConectado ao broker: Cliente %s.\n", idClient)
 
-		//Subscreve ao tópico de resposta ANTES de publicar
+		// Inscreve-se no tópico de resposta específico para este cliente
 		if token := c.Subscribe(topicResponse, 0, func(client mqtt.Client, msg mqtt.Message) {
 			mensagemRecebida := string(msg.Payload())
 			fmt.Printf("\n[Resposta]: %s\n", mensagemRecebida)
@@ -29,16 +31,20 @@ func conecta(mensagem string, idClient string) bool {
 			if len(parts) < 1 {
 				return
 			}
+			// Processa diferentes tipos de respostas do servidor
 			switch parts[0] {
 			case "reserva_confirmada":
+				// Processamento de confirmação de reserva
 				fmt.Println("\n[sucesso] Reserva efetuada!")
 				respostaRecebida = true
 				operacaoSucesso = true
 			case "reserva_falhou":
+				// Processamento de falha na reserva
 				fmt.Println("\n[falha] Não foi possível reservar todos os pontos.")
 				respostaRecebida = true
 				operacaoSucesso = false
 			case "ponto_desconectado":
+				// Processamento de notificação de ponto desconectado
 				if len(parts) >= 2 {
 					fmt.Printf("\n[info] Ponto %s desconectado.\n", parts[1])
 				} else {
@@ -48,6 +54,7 @@ func conecta(mensagem string, idClient string) bool {
 				respostaRecebida = true
 				operacaoSucesso = false
 			case "falha_reserva":
+				// Processamento de erro específico na reserva
 				if len(parts) >= 3 {
 					fmt.Printf("\n[Erro] reserva: %s\n", parts[2])
 				} else {
@@ -56,10 +63,12 @@ func conecta(mensagem string, idClient string) bool {
 				respostaRecebida = true
 				operacaoSucesso = false
 			case "cancelamento_confirmado":
+				// Processamento de confirmação de cancelamento
 				fmt.Println("\n[info] Cancelamento de reserva realizado.")
 				respostaRecebida = true
 				operacaoSucesso = true
 			case "cancelamento_falhou":
+				// Processamento de falha no cancelamento
 				if len(parts) >= 2 {
 					fmt.Printf("\n [Erro] ao cancelar reserva: %s\n", parts[1])
 				} else {
@@ -68,14 +77,17 @@ func conecta(mensagem string, idClient string) bool {
 				respostaRecebida = true
 				operacaoSucesso = false
 			case "prereserva_confirmada":
+				// Processamento de confirmação de pré-reserva
 				fmt.Println("\n [sucesso] Pré-reserva realizada! Confirme em até 15 minutos.")
 				respostaRecebida = true
 				operacaoSucesso = true
 			case "prereserva_cancelada":
+				// Processamento de cancelamento de pré-reserva
 				fmt.Println("\n [info] Pré-reserva cancelada.")
 				respostaRecebida = true
 				operacaoSucesso = true
 			case "falha_prereserva":
+				// Processamento de falha na pré-reserva
 				if len(parts) >= 3 {
 					fmt.Printf("\n [Falha] pré-reserva: %s\n", parts[2])
 				} else {
@@ -84,6 +96,7 @@ func conecta(mensagem string, idClient string) bool {
 				respostaRecebida = true
 				operacaoSucesso = false
 			case "pontos_liberados":
+				// Processamento de confirmação de liberação de pontos
 				if len(parts) >= 2 {
 					fmt.Printf("\n%s\n", parts[1])
 				} else {
@@ -99,21 +112,26 @@ func conecta(mensagem string, idClient string) bool {
 		}
 	}
 
+	// Estabelece conexão com o broker MQTT
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
+
 	//garante que a conexão foi estabelecida
 	time.Sleep(1 * time.Second)
+
 	// Publica a mensagem no canal de solicitações
 	fmt.Printf("\n[Enviando solicitação]: %s\n", mensagem)
 	token := client.Publish("mensagens/cliente", 0, false, mensagem)
 	token.Wait()
-	//aguarda resposta
+
+	// Implementação de timeout para aguardar resposta do servidor
 	fmt.Println("Aguardando resposta do servidor...")
 	timeout := time.After(10 * time.Second)
 	ticker := time.Tick(500 * time.Millisecond)
 
+	// Loop que aguarda a resposta ou timeout
 	for !respostaRecebida {
 		select {
 		case <-timeout:
@@ -123,7 +141,7 @@ func conecta(mensagem string, idClient string) bool {
 			// Continua aguardando
 		}
 	}
-	// Desconecta após receber resposta ou timeout
+	// Encerra a conexão MQTT após receber resposta
 	client.Disconnect(250)
 	return operacaoSucesso
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Estrutura que representa um ponto de recarga no sistema
 type Ponto struct {
 	ID        int     `json:"id"`
 	Cidade    string  `json:"cidade"`
@@ -17,17 +18,20 @@ type Ponto struct {
 	Reservado string  `json:"reservado"`
 }
 
+// Dados completos da região com pontos e rota principal
 type DadosRegiao struct {
 	PontosDeRecarga     []Ponto  `json:"pontos_de_recarga"`
 	RotaSalvadorSaoLuis []string `json:"rota_salvador_saoLuis"`
 }
 
+// Registra uma operação de recarga realizada
 type Recarga struct {
 	Data    string  `json:"data"`
 	PontoID int     `json:"ponto_id"`
 	Valor   float64 `json:"valor"`
 }
 
+// Representa um veículo no sistema
 type Veiculo struct {
 	Placa             string    `json:"placa"`
 	Autonomia         float64   `json:"autonomia"`
@@ -35,11 +39,13 @@ type Veiculo struct {
 	Recargas          []Recarga `json:"recargas,omitempty"`
 }
 
+// Contém todos os veículos ativos no sistema
 type DadosVeiculos struct {
 	Veiculos []Veiculo `json:"veiculos"`
 }
 
-//ok
+// ok
+// Carrega os dados dos veículos do arquivo JSON
 func AbreArquivoVeiculos() (DadosVeiculos, error) {
 	file, erro := os.Open("/app/veiculos.json")
 	if erro != nil {
@@ -55,7 +61,8 @@ func AbreArquivoVeiculos() (DadosVeiculos, error) {
 	return dadosVeiculos, nil
 }
 
-//ok
+// ok
+// Adiciona um novo veículo ao arquivo JSON
 func EscreveArquivoVeiculos(veiculo Veiculo) error {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -77,7 +84,9 @@ func EscreveArquivoVeiculos(veiculo Veiculo) error {
 	return erro
 }
 
-//ok
+// ok
+// Localiza um veículo pela sua placa
+// Retorna o veículo e um código (0=sucesso, 1=erro, 2=não encontrado)
 func GetVeiculoPorPlaca(placa string) (Veiculo, int) {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -92,7 +101,8 @@ func GetVeiculoPorPlaca(placa string) (Veiculo, int) {
 	return Veiculo{}, 2
 }
 
-//ok
+// ok
+// Remove um veículo do arquivo de veículos ativos
 func RemovePlacaVeiculo(placa string) error {
 	dadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -118,7 +128,8 @@ func RemovePlacaVeiculo(placa string) error {
 	return encoder.Encode(dadosVeiculos)
 }
 
-//ok
+// ok
+// Obtém a lista de todos os veículos ativos
 func GetVeiculosAtivosJson() ([]Veiculo, error) {
 	DadosVeiculos, erro := AbreArquivoVeiculos()
 	if erro != nil {
@@ -127,7 +138,8 @@ func GetVeiculosAtivosJson() ([]Veiculo, error) {
 	return DadosVeiculos.Veiculos, nil
 }
 
-//ok
+// ok
+// Carrega os dados da região do arquivo JSON
 func AbreArquivoRegiao() (DadosRegiao, error) {
 	file, erro := os.Open("/app/regiao.json")
 	if erro != nil {
@@ -143,7 +155,8 @@ func AbreArquivoRegiao() (DadosRegiao, error) {
 	return dadosRegiao, nil
 }
 
-//ok
+// ok
+// Obtém a rota principal Salvador-São Luís
 func GetRotaJson() ([]string, error) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -152,7 +165,8 @@ func GetRotaJson() ([]string, error) {
 	return dadosRegiao.RotaSalvadorSaoLuis, nil
 }
 
-//ok
+// ok
+// Obtém a lista de todos os pontos de recarga
 func GetPontosDeRecargaJson() ([]Ponto, error) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -161,7 +175,9 @@ func GetPontosDeRecargaJson() ([]Ponto, error) {
 	return dadosRegiao.PontosDeRecarga, nil
 }
 
-//ok
+// ok
+// Localiza pontos de recarga por cidade
+// Retorna pontos correspondentes às cidades da lista
 func GetPontosPorCidades(cidades []string) []Ponto {
 	var pontos []Ponto
 	pontosJson, erro := GetPontosDeRecargaJson()
@@ -178,7 +194,9 @@ func GetPontosPorCidades(cidades []string) []Ponto {
 	return pontos
 }
 
-//ok
+// ok
+// Calcula trecho de rota entre origem e destino
+// Retorna a lista de cidades do trecho e índices da origem/destino
 func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string) ([]string, int, int) {
 	var trechoViagem []string
 
@@ -199,7 +217,8 @@ func GetTrechoRotaCompleta(origem string, destino string, rotaCompleta []string)
 	return trechoViagem, indexOrigem - 1, indexDestino - 1
 }
 
-//ok
+// ok
+// Localiza um ponto de recarga pelo ID
 func GetPontoId(id int) (Ponto, int) {
 	dadosRegiao, erro := AbreArquivoRegiao()
 	if erro != nil {
@@ -214,7 +233,8 @@ func GetPontoId(id int) (Ponto, int) {
 	return Ponto{}, 2
 }
 
-//ok
+// ok
+// Retorna o número total de pontos de recarga cadastrados
 func GetTotalPontosJson() int {
 	pontos, erro := GetPontosDeRecargaJson()
 	if erro != nil {

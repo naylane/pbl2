@@ -12,7 +12,8 @@ import (
 
 var placa string
 
-//ok
+// ok
+// Exibe lista de cidades disponíveis para seleção
 func listCapitaisNordeste() {
 	fmt.Println("\n======= Cidades com Servico de Recarga =======")
 	fmt.Println("(1) - Salvador")
@@ -27,13 +28,17 @@ func listCapitaisNordeste() {
 	fmt.Println("(0) - Retornar ao Menu")
 }
 
-//ok
+// ok
+// Apresenta opções principais do sistema
 func opcoesMenu() {
 	fmt.Println("\n======= Menu Inicial =======")
 	fmt.Println("(1) - Programar viagem")
 	fmt.Println("(0) - Sair")
 }
 
+// ok
+// Função principal de controle do programa
+// Gerencia a identificação do veículo e escolhas do usuário
 func MenuInicial() {
 	input := bufio.NewReader(os.Stdin)
 	on := true
@@ -53,6 +58,7 @@ func MenuInicial() {
 	defer RemovePlacaVeiculo(veiculo.Placa)
 	fmt.Printf("Placa[%s] registrada\n", veiculo.Placa)
 
+	// Configura tratamento para sinais de interrupção
 	canalSinal := make(chan os.Signal, 1)
 	signal.Notify(canalSinal, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -61,6 +67,7 @@ func MenuInicial() {
 		os.Exit(0)
 	}()
 
+	// Loop principal do menu
 	for on {
 		opcoesMenu()
 		fmt.Println("Selecione uma opcao: ")
@@ -80,7 +87,8 @@ func MenuInicial() {
 	}
 }
 
-//ok
+// ok
+// Solicita e valida a seleção de uma cidade
 func GetCidade(tipo string) string {
 	input := bufio.NewReader(os.Stdin)
 	on := true
@@ -103,7 +111,9 @@ func GetCidade(tipo string) string {
 	return "-1"
 }
 
-//ok
+// ok
+// Solicita e valida a placa do veículo
+// Verifica se a placa já está em uso no sistema
 func IdentificacaoInicialPlaca() string {
 	input := bufio.NewReader(os.Stdin)
 	placa := ""
@@ -139,7 +149,9 @@ func IdentificacaoInicialPlaca() string {
 	return placa
 }
 
-//ok
+// ok
+// Simula a viagem e calcula pontos necessários para recarga
+// Baseado na autonomia atual do veículo e distâncias entre cidades
 func RecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) []Ponto {
 	var recargas_necessarias []Ponto
 	var cap_km_bateria_restante, dist_ate_prox_ponto float64
@@ -175,7 +187,8 @@ func RecargasNecessarias(veiculo *Veiculo, cidades_da_viagem []string) []Ponto {
 	return recargas_necessarias
 }
 
-//ok
+// ok
+// Calcula a distância total entre dois pontos na rota
 func GetDistanciaRota(origem, destino int) float64 {
 	var pontosViagem []Ponto
 	pontos, erro := GetPontosDeRecargaJson()
@@ -207,7 +220,9 @@ func GetDistanciaRota(origem, destino int) float64 {
 	return distanciaTotal
 }
 
-//ok
+// ok
+// Função principal para programar viagem e reservar pontos
+// Gerencia todo o processo desde seleção de origem/destino até confirmação
 func ProgramarReservas(veiculo *Veiculo) {
 	origem := GetCidade("Origem")
 	if origem == "-2" {
@@ -298,8 +313,8 @@ func ProgramarReservas(veiculo *Veiculo) {
 	}
 }
 
-//ok
-// Libera os pontos ao concluir viagem
+// ok
+// Envia mensagem MQTT para liberar pontos após viagem concluída
 func liberarPontosMQTT(placa string, pontos []string) {
 	mensagem := "7," + placa + "," + strings.Join(pontos, ",")
 	conecta(mensagem, placa)

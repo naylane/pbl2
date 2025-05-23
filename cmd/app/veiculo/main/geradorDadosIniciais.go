@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+// Inicializa um veículo com dados aleatórios de bateria e autonomia
 func setDadosIniciais(veiculo *Veiculo) {
 	level := float64(int(10 + rand.Float64()*(91)))
 	autonomia := float64(int(500 + rand.Float64()*(201)))
