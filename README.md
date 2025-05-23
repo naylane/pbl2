@@ -1,4 +1,4 @@
-<h2 align="center">Programação de recargas para viagens em carros elétricos</h2>
+<h2 align="center">Planejamento de viagens com suporte a recargasa de veículos elétricos</h2>
 <h4 align="center">Projeto da disciplina TEC502 - Concorrência e Conectividade.</h4>
 
 <p align="center">Este projeto foi desenvolvido para facilitar a comunicação entre veículos elétricos e pontos de recarga. Utilizando arquiteturas MQTT, API's REST e Clientes, o sistema permite que veículos programem viagens reservando pontos necessário para recarregar, informem a cidade de origem e a cidade de destino, estado atual da bateria e sua autonomia e recebam recomendações para pontos de recarga para atender ao seu percurso.</p>
