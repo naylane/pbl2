@@ -1,10 +1,9 @@
 #!/bin/bash
 
-chmod +x para.sh
+# cd ./cmd/app/exec
+#chmod +x para.sh
+# ./para.sh
 
 docker-compose stop
 docker-compose down --rmi all --volumes --remove-orphans
 clear
-
-# cd ./cmd/app/exec
-# ./para.sh

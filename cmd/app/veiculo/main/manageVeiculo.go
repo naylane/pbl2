@@ -275,7 +275,7 @@ func ProgramarReservas(veiculo *Veiculo) {
 			//simula viagem e recargas
 			fmt.Println("\nSimulando viagem...")
 			for i, ponto := range listPontosFinal {
-				fmt.Printf("\nParada %d/%dn", i+1, len(listPontosFinal))
+				fmt.Printf("\nParada %d/%d\n", i+1, len(listPontosFinal))
 				fmt.Printf("Veiculo viajando para %s...\n", ponto)
 				time.Sleep(2 * time.Second)
 				fmt.Printf("Chegou em %s. Carregando...\n", ponto)

@@ -1,16 +1,9 @@
 #!/bin/bash
+# cd ./cmd/app/exec
+#chmod +x inicia.sh
+# ./inicia.sh
+docker-compose up --build broker servidor1 
 
-chmod +x inicia.sh
-
-docker-compose build
-docker-compose create
-docker ps -a
-docker-compose start servidor1 
-docker-compose logs -f
-#Para o veiculo:
-#docker-compose start veiculo
+#docker-compose up --build -d veiculo
 #docker exec -it veiculo sh
 #./veiculo
-
-# cd ./cmd/app/exec
-# ./inicia.sh
