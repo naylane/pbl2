@@ -126,32 +126,39 @@ A arquitetura utiliza MQTT para comunicação assíncrona e API REST para coorde
    git clone https://github.com/usuario/nome-do-repositorio.git
    cd nome-do-repositorio
    ```
-2. Compile as imagens Docker e inicie o sistema:
+2. Acesse a pasta principal do projeto e utilize os scripts de automação localizados em `exec/` para iniciar e parar o sistema. Estes scripts facilitam a orquestração dos containers e dos serviços:
+
+   - Para iniciar todos os serviços principais:
+     ```bash
+     ./cmd/app/exec/inicia.sh
+     ```
+   - Para encerrar todos os serviços:
+     ```bash
+     ./cmd/app/exec/para.sh
+     ```
+   - Para iniciar os servidores adicionais:
+     ```bash
+     ./cmd/servidor2/exec/servidor2.sh
+     ./cmd/servidor3/exec/servidor3.sh
+     ```
+
+3. Para acessar a interface do veículo:
    ```bash
-   docker compose up --build -d
+  docker-compose start veiculo
+  docker exec -it veiculo sh
    ```
-3. Acesse o terminal do veículo ou servidor:
-   ```bash
-   docker compose exec veiculo sh
-   # ou
-   docker compose exec servidor1 sh
-   ```
-4. Execute a aplicação dentro do container:
+
+4. Dentro do terminal do veículo, execute o binário para iniciar a aplicação:
    ```bash
    ./veiculo
-   # ou
-   ./servidor
    ```
-5. Para encerrar:
+
+5. Para visualizar logs em tempo real de algum serviço:
    ```bash
-   docker compose down
+   docker compose logs -f <nome-do-serviço>
    ```
-6. Para ver logs:
-   ```bash
-   docker compose logs -f servidor1
-   # ou
-   docker compose logs -f veiculo
-   ```
+
+> **Dica:** Os scripts em `exec/` automatizam a criação, inicialização e parada dos containers, além de garantir que dependências e redes estejam corretamente configuradas. Utilize esses scripts para evitar problemas de inicialização manual.
 
 ## Tecnologias Utilizadas
 - Go (Golang)
