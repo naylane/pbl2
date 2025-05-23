@@ -142,11 +142,11 @@ A arquitetura utiliza MQTT para comunicação assíncrona e API REST para coorde
      ./cmd/servidor3/exec/servidor3.sh
      ```
 
-3. Para acessar a interface do veículo:
-   ```bash
+3. Para acessar a interface do veículo:   
+  ```bash
   docker-compose start veiculo
   docker exec -it veiculo sh
-   ```
+   ```   
 
 4. Dentro do terminal do veículo, execute o binário para iniciar a aplicação:
    ```bash
