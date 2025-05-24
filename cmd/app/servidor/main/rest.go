@@ -623,9 +623,13 @@ func handleConfirmacaoPreReservaRest(placaVeiculo string, pontos []string) bool 
 		}
 
 		if resposta.Status != "confirmado" {
-			fmt.Printf("[ALERTA] Falha na confirmação em %s: %s.\n", servidor, resposta.Mensagem)
-			todasConfirmadas = false
-			respostasFalhas = append(respostasFalhas, resposta.Mensagem)
+			if resposta.Status == "ignorado" {
+				fmt.Printf("[INFO] Confirmação ignorada em %s: %s.\n", servidor, resposta.Mensagem)
+			} else {
+				fmt.Printf("[ALERTA] Falha na confirmação em %s: %s.\n", servidor, resposta.Mensagem)
+				todasConfirmadas = false
+				respostasFalhas = append(respostasFalhas, resposta.Mensagem)
+			}
 		} else {
 			fmt.Printf("[SUCESSO] Pré-reserva confirmada em %s para ponto %s.\n", servidor, resposta.Ponto)
 		}
